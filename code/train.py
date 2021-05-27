@@ -1,6 +1,4 @@
 import os
-from albumentations.augmentations.transforms import HorizontalFlip, ShiftScaleRotate, VerticalFlip
-from albumentations.core.composition import OneOf
 import wandb
 import argparse
 import multiprocessing
@@ -71,6 +69,7 @@ def run_epoch(
         model.train()
     else:
         model.eval()
+        teacher_forcing_ratio = 0.0
 
     losses = []
     grad_norms = []
@@ -348,6 +347,13 @@ def main(config_file):
             pad=len(str(options.num_epochs)),
         )
 
+        if epoch < (options.num_epochs * 0.3):            
+            teacher_forcing_ratio = options.teacher_forcing_ratio[0]
+        elif epoch >= (options.num_epochs * 0.3) and epoch < (options.num_epochs * 0.8):
+            teacher_forcing_ratio = options.teacher_forcing_ratio[1]
+        else:
+            teacher_forcing_ratio = options.teacher_forcing_ratio[2]
+
         # Train
         train_result = run_epoch(
             train_data_loader,
@@ -356,7 +362,7 @@ def main(config_file):
             criterion,
             optimizer,
             lr_scheduler,
-            options.teacher_forcing_ratio,
+            teacher_forcing_ratio,
             options.max_grad_norm,
             device,
             train=True,
@@ -379,7 +385,7 @@ def main(config_file):
                 train_result["wer"] / train_result["num_wer"]
         )
         train_wer.append(train_epoch_wer)
-        epoch_lr = lr_scheduler.get_lr()  # cycle
+        epoch_lr = lr_scheduler.get_lr()[0]  # cycle
 
         # Validation
         validation_result = run_epoch(
@@ -389,7 +395,7 @@ def main(config_file):
             criterion,
             optimizer,
             lr_scheduler,
-            options.teacher_forcing_ratio,
+            teacher_forcing_ratio,
             options.max_grad_norm,
             device,
             train=False,
@@ -467,7 +473,8 @@ def main(config_file):
             )
             print(output_string)
             log_file.write(output_string + "\n")
-            wandb.log({                                
+            wandb.log({                    
+                'Epoch': start_epoch + epoch + 1,             
                 'Train/Symbol_Accuracy': train_epoch_symbol_accuracy,
                 'Train/Sentence_Accuracy': train_epoch_sentence_accuracy,
                 'Train/WER': train_epoch_wer,
@@ -475,7 +482,8 @@ def main(config_file):
                 'Validation/Symbol_Accuracy': validation_epoch_symbol_accuracy,
                 'Validation/Sentence_Accuracy': validation_epoch_sentence_accuracy,
                 'Validation/WER': validation_epoch_wer,
-                'Validation/Loss': validation_result["loss"]
+                'Validation/Loss': validation_result["loss"],
+                'Teacher_Forcing_Ratio': teacher_forcing_ratio
             })
 
 
