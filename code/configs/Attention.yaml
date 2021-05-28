@@ -15,7 +15,9 @@ SATRN:
     layer_num: 3
     head_num: 8
 Attention:
+  encoder_type: "resnet"
   src_dim: 512
+  seq_hidden_dim : 256
   hidden_dim: 128
   embedding_dim: 128
   layer_num: 1
@@ -37,13 +39,13 @@ data:
   crop: True
   rgb: 1    # 3 for color, 1 for greyscale
   
-batch_size: 170 #96
+batch_size: 128 #96
 num_workers: 8
 num_epochs: 70 #50
 print_epochs: 1
 dropout_rate: 0.1
 
-teacher_forcing_ratio: [0.65,0.6,0.5,0.5]
+teacher_forcing_ratio: [0.7,0.6,0.5,0.5]
 ratio_cycle: 20
 
 augmentation: 'baseline'
@@ -51,7 +53,8 @@ augmentation: 'baseline'
 max_grad_norm: 2.0
 seed: 914
 optimizer:
-  optimizer: 'Madgrad' # Adam, Adadelta
-  lr: 5e-5 #5e-4 # 1e-4
+  optimizer: 'Adam' # Adam, Adadelta
+  lr: 5e-4 #5e-4 # 1e-4
   weight_decay: 1e-4
-  is_cycle: True
+  type: "cycle"
+  # is_cycle: True

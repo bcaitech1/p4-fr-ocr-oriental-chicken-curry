@@ -126,6 +126,7 @@ def run_epoch(
             expected = d["truth"]["encoded"].to(device)
 
             # Replace -1 with the PAD token
+            # -1로 되어 있는 부분을 PAD Token 아이디로 대체
             expected[expected == -1] = data_loader.dataset.token_to_id[PAD]
 
             output = model(input, expected, train, teacher_forcing_ratio, epoch, ratio_cycle)
@@ -277,29 +278,20 @@ def main(config_file):
         param_group["initial_lr"] = options.optimizer.lr
 
 
-    if options.optimizer.is_cycle:# 스케줄러 조정
-        # cycle = len(train_data_loader) * options.num_epochs
-        # lr_scheduler = CircularLRBeta(
-        #     optimizer, options.optimizer.lr, 10, 10, cycle, [0.95, 0.85]
-        # )
+    if options.optimizer.type == "cawr":# 스케줄러 조정
         lr_scheduler = CosineAnnealingWarmUpRestarts(
             optimizer,
-            T_0=len(train_data_loader) * 8,
-            T_up=len(train_data_loader) * 4,
+            T_0=len(train_data_loader) * options.num_epochs,
+            T_up=len(train_data_loader) * (options.num_epochs/2),
             T_mult=2,
             eta_max= 5e-4,
             gamma= 0.5,
             )
-        # lr_scheduler = CosineAnnealingWarmUpRestarts2(
-        #     optimizer,
-        #     first_cycle_steps = one_epoch_step * 4,
-        #     cycle_mult = 2.0,
-        #     max_lr = 1e-4,
-        #     min_lr = 5,
-        #     warmup_steps = one_epoch_step,
-        #     gamma = 0.5,
-        #     last_epoch = 70
-        #     )
+    elif options.optimizer.type == "cycle":
+        cycle = len(train_data_loader) * options.num_epochs
+        lr_scheduler = CircularLRBeta(
+            optimizer, options.optimizer.lr, 10, 10, cycle, [0.95, 0.85]
+        )
     else:
         lr_scheduler = optim.lr_scheduler.StepLR(
             optimizer,
@@ -460,7 +452,6 @@ def main(config_file):
                 time=elapsed_time,
             )
             print(output_string)
-            # log_file.write(output_string + "\n")
             # epoch base wandb log 
             wandb.log(
                 {
@@ -475,24 +466,8 @@ def main(config_file):
                     "val/wer":validation_epoch_wer,
                     "val/score" : (validation_epoch_sentence_accuracy * 0.9) + (0.1 * (1 - validation_epoch_wer)),
                     "train/teacher_forcing" : options.teacher_forcing_ratio[epoch // options.ratio_cycle]
-                    # "learning_rate": optimizer.param_groups[0]['lr']
-                    # "learning_rate": learning_rates
                 }
             )
-            # write_tensorboard(
-            #     writer,
-            #     start_epoch + epoch + 1,
-            #     train_result["grad_norm"],
-            #     train_result["loss"],
-            #     train_epoch_symbol_accuracy,
-            #     train_epoch_sentence_accuracy,
-            #     train_epoch_wer,
-            #     validation_result["loss"],
-            #     validation_epoch_symbol_accuracy,
-            #     validation_epoch_sentence_accuracy,
-            #     validation_epoch_wer,
-            #     model,
-            # )
 
 
 if __name__ == "__main__":
