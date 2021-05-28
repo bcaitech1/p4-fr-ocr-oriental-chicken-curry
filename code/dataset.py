@@ -143,7 +143,7 @@ class LoadDataset(Dataset):
         ]
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data)        
 
     def __getitem__(self, i):
         item = self.data[i]
@@ -235,7 +235,7 @@ class LoadEvalDataset(Dataset):
 
         return {"path": item["path"], "file_path":item["file_path"], "truth": item["truth"], "image": image}
 
-def dataset_loader(options, transformed):
+def dataset_loader(options, train_transform, valid_transform):
 
     # Read data
     train_data, valid_data = [], [] 
@@ -259,7 +259,7 @@ def dataset_loader(options, transformed):
 
     # Load data
     train_dataset = LoadDataset(
-        train_data, options.data.token_paths, crop=options.data.crop, transform=transformed, rgb=options.data.rgb
+        train_data, options.data.token_paths, crop=options.data.crop, transform=train_transform, rgb=options.data.rgb
     )
     train_data_loader = DataLoader(
         train_dataset,
@@ -270,7 +270,7 @@ def dataset_loader(options, transformed):
     )
 
     valid_dataset = LoadDataset(
-        valid_data, options.data.token_paths, crop=options.data.crop, transform=transformed, rgb=options.data.rgb
+        valid_data, options.data.token_paths, crop=options.data.crop, transform=valid_transform, rgb=options.data.rgb
     )
     valid_data_loader = DataLoader(
         valid_dataset,

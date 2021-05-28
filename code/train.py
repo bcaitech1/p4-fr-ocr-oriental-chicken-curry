@@ -234,7 +234,7 @@ def main(config_file):
         )
 
     # Get data
-    transformed = A.Compose([
+    train_transform = A.Compose([
         A.Resize(options.input_size.height, options.input_size.width),
         A.OneOf([
             A.Rotate(),
@@ -250,6 +250,11 @@ def main(config_file):
         ToTensorV2()
     ])
     
+    valid_transform = A.Compose([
+        A.Resize(options.input_size.height, options.input_size.width),
+        ToTensorV2()
+    ])
+
     # transformed = transforms.Compose(
     #     [
     #         # Resize so all images have the same size
@@ -259,7 +264,7 @@ def main(config_file):
     # )
     
 
-    train_data_loader, validation_data_loader, train_dataset, valid_dataset = dataset_loader(options, transformed)
+    train_data_loader, validation_data_loader, train_dataset, valid_dataset = dataset_loader(options, train_transform, valid_transform)
     print(
         "[+] Data\n",
         "The number of train samples : {}\n".format(len(train_dataset)),

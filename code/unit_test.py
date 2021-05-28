@@ -217,7 +217,3 @@ from torchsummary import summary
 custom_net = ResNet_ASTER(out_channel=300)
 custom_net.to(device)
 summary(custom_net, input_size=(1, 128, 128))
-
-
-
-
