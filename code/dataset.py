@@ -6,6 +6,7 @@ import numpy as np
 from PIL import Image, ImageOps
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
+from sklearn.model_selection import train_test_split
 
 START = "<SOS>"
 END = "<EOS>"
@@ -44,18 +45,24 @@ def split_gt(groundtruth, proportion=1.0, test_percent=None):
     source = os.path.join(os.path.dirname(groundtruth), "source.txt")
     with open(groundtruth, "r") as fd, open(source, "r") as src:
         data=[]
+        source=[]   # for stratified split
         for line, line2 in zip(fd, src):
             tmp = line.strip().split("\t")
             tmp.append(int(line2.strip().split("\t")[1]))
+            source.append(int(line2.strip().split("\t")[1]))
             data.append(tmp)
-        random.shuffle(data)
+        # random.shuffle(data)
         dataset_len = round(len(data) * proportion)
         data = data[:dataset_len]
         data = [[os.path.join(root, x[0]), x[1], x[2]] for x in data]
+        # print(len(data), len(source))
     
     if test_percent:
-        test_len = round(len(data) * test_percent)
-        return data[test_len:], data[:test_len]
+        X_train, y_train = train_test_split(data, test_size=test_percent, stratify=source, random_state=77)
+        # test_len = round(len(data) * test_percent)
+        # print(len(X_train), type(X_train), len(data[test_len:]), type(data[test_len:]))
+        # return data[test_len:], data[:test_len]
+        return X_train, y_train
     else:
         return data
 

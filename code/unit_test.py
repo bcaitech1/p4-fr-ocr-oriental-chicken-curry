@@ -12,7 +12,10 @@ crop=False
 transform=None
 rgb=1
 
-
+train_, valid_ = split_gt(groundtruth, proportion=1.0, test_percent=0.2)
+print('\n', len(train_), type(train_))
+pprint(train_[0])
+print('\n\n')
 dataset = LoadDataset(split_gt(groundtruth), tokens_file, crop, transform, rgb)
 sample = dataset.__getitem__(0)
 pprint(sample['path'])
@@ -172,11 +175,17 @@ class DeepCNN300(nn.Module):
         return out_A  # 128 x (16x16)
 
 device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
-org_net = DeepCNN300(1, 48)
-custom_net = ResNet_ASTER(out_channel=300)
-org_net.to(device)
-custom_net.to(device)
+
 from torchsummary import summary
 
+org_net = DeepCNN300(1, 48)
+org_net.to(device)
 summary(org_net, input_size=(1, 128, 128))
-summary(custom_net, input_size=(1, 128, 128))
+
+# custom_net = ResNet_ASTER(out_channel=300)
+# custom_net.to(device)
+# summary(custom_net, input_size=(1, 128, 128))
+
+
+
+
