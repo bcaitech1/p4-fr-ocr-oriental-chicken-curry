@@ -56,6 +56,7 @@ def run_epoch(
     model,
     epoch_text,
     criterion,
+    aux_criterion,
     optimizer,
     lr_scheduler,
     teacher_forcing_ratio,
@@ -86,22 +87,25 @@ def run_epoch(
         leave=False,
     ) as pbar:
         for d in data_loader:
-            input = d["image"].to(device)
+            image = d["image"].float().to(device)
+            # print(image.shape, type(image))
+            aux_label = d["source"].float().to(device)
+            # print(aux_label.shape, type(aux_label))
 
             # The last batch may not be a full batch
-            curr_batch_size = len(input)
+            curr_batch_size = len(image)
             expected = d["truth"]["encoded"].to(device)
 
             # Replace -1 with the PAD token
             expected[expected == -1] = data_loader.dataset.token_to_id[PAD]
 
-            output = model(input, expected, train, teacher_forcing_ratio)
+            output, aux_output = model(image, expected, train, teacher_forcing_ratio)
             
             decoded_values = output.transpose(1, 2)
             _, sequence = torch.topk(decoded_values, 1, dim=1)
             sequence = sequence.squeeze(1)
             
-            loss = criterion(decoded_values, expected[:, 1:])
+            loss = criterion(decoded_values, expected[:, 1:]) + (aux_criterion(aux_output, aux_label) * 0.4)
 
             if train:
                 optim_params = [
@@ -125,6 +129,9 @@ def run_epoch(
                     'Learning_rate' : lr_scheduler.get_lr()[0]
                 })
 
+            wandb.log({
+                'Teacher_Forcing_Ratio': teacher_forcing_ratio
+            })
             losses.append(loss.item())
             
             expected[expected == data_loader.dataset.token_to_id[PAD]] = -1
@@ -268,6 +275,7 @@ def main(config_file):
     wandb.watch(model)  # WANDB
     model.train()
     criterion = model.criterion.to(device)
+    aux_criterion = model.aux_criterion.to(device)
     enc_params_to_optimise = [
         param for param in model.encoder.parameters() if param.requires_grad
     ]
@@ -316,10 +324,10 @@ def main(config_file):
             gamma=options.optimizer.gamma
         )
 
-    scheduler_state = checkpoint.get("scheduler")
+    # scheduler_state = checkpoint.get("scheduler")
 
-    if scheduler_state:
-        lr_scheduler.load_state_dict(scheduler_state)
+    # if scheduler_state:
+    #     lr_scheduler.load_state_dict(scheduler_state)
 
     # Log
     if not os.path.exists(options.prefix):
@@ -338,7 +346,7 @@ def main(config_file):
     validation_wer=checkpoint["validation_wer"]
     validation_losses = checkpoint["validation_losses"]
     learning_rates = checkpoint["lr"]
-    lr_scheduler = checkpoint["scheduler"]
+    # lr_scheduler = checkpoint["scheduler"]
     grad_norms = checkpoint["grad_norm"]
 
     # Train
@@ -365,12 +373,13 @@ def main(config_file):
             model,
             epoch_text,
             criterion,
+            aux_criterion,
             optimizer,
             lr_scheduler,
             teacher_forcing_ratio,
             options.max_grad_norm,
             device,
-            train=True,
+            train=True
         )
 
 
@@ -398,6 +407,7 @@ def main(config_file):
             model,
             epoch_text,
             criterion,
+            aux_criterion,
             optimizer,
             lr_scheduler,
             teacher_forcing_ratio,
@@ -440,7 +450,7 @@ def main(config_file):
                 "grad_norm": grad_norms,
                 "model": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
-                "scheduler": lr_scheduler,
+                # "scheduler": lr_scheduler,
                 "configs": option_dict,
                 "token_to_id":train_data_loader.dataset.token_to_id,
                 "id_to_token":train_data_loader.dataset.id_to_token
@@ -490,8 +500,8 @@ def main(config_file):
                 'Validation/Sentence_Accuracy': validation_epoch_sentence_accuracy,
                 'Validation/WER': validation_epoch_wer,
                 'Validation/Loss': validation_result["loss"],
-                'Validation/Score': 0.9 * validation_epoch_sentence_accuracy + 0.1 * (1 - validation_epoch_wer),
-                'Teacher_Forcing_Ratio': teacher_forcing_ratio
+                'Validation/Score': 0.9 * validation_epoch_sentence_accuracy + 0.1 * (1 - validation_epoch_wer)
+                
             })
 
 

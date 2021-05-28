@@ -1,26 +1,58 @@
 import torch
 import torch.nn as nn
+import albumentations as A
 
-from dataset import LoadDataset, split_gt
+from albumentations.pytorch.transforms import ToTensorV2
+from torch.utils.data import DataLoader
+
+from dataset import LoadDataset, split_gt, collate_batch
 from prettyprinter import pprint
 from networks.backbone import ResNet_ASTER
 
 groundtruth = '/opt/ml/input/data/train_dataset/gt.txt'
 tokens_file = ["/opt/ml/input/data/train_dataset/tokens.txt"]
 source_file = '/opt/ml/input/data/train_dataset/source.txt'
-crop=False
-transform=None
+crop=True
 rgb=1
 
+transformed = A.Compose([
+        A.Resize(128, 128),
+        A.OneOf([
+            A.Rotate(),
+            A.ShiftScaleRotate(),
+            A.RandomRotate90(),
+            A.VerticalFlip()
+        ]),
+        A.OneOf([
+            A.MotionBlur(),
+            A.Blur(),
+            A.GaussianBlur()
+        ]),
+        ToTensorV2()
+    ])
+
+
 train_, valid_ = split_gt(groundtruth, proportion=1.0, test_percent=0.2)
-print('\n', len(train_), type(train_))
-pprint(train_[0])
+print('\n', len(valid_), type(valid_))
+pprint(valid_[0])
 print('\n\n')
-dataset = LoadDataset(split_gt(groundtruth), tokens_file, crop, transform, rgb)
+dataset = LoadDataset(split_gt(groundtruth), tokens_file, crop, transformed, rgb)
 sample = dataset.__getitem__(0)
 pprint(sample['path'])
 pprint(sample['truth'])
 pprint(sample['source'])
+
+data_loader = DataLoader(
+        dataset,
+        batch_size=2,
+        shuffle=True,
+        num_workers=8,
+        collate_fn=collate_batch,
+    )
+
+for d in data_loader:
+    pprint(d)
+    break
 
 
 class BottleneckBlock(nn.Module):
@@ -178,13 +210,13 @@ device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 from torchsummary import summary
 
-org_net = DeepCNN300(1, 48)
-org_net.to(device)
-summary(org_net, input_size=(1, 128, 128))
+# org_net = DeepCNN300(1, 48)
+# org_net.to(device)
+# summary(org_net, input_size=(1, 128, 128))
 
-# custom_net = ResNet_ASTER(out_channel=300)
-# custom_net.to(device)
-# summary(custom_net, input_size=(1, 128, 128))
+custom_net = ResNet_ASTER(out_channel=300)
+custom_net.to(device)
+summary(custom_net, input_size=(1, 128, 128))
 
 
 

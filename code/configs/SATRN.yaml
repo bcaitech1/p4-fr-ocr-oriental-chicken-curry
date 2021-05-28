@@ -39,17 +39,17 @@ data:
   
 batch_size: 54
 num_workers: 8
-num_epochs: 50
+num_epochs: 70
 print_epochs: 1
 dropout_rate: 0.1
-teacher_forcing_ratio: [0.75, 0.5, 0.35]
+teacher_forcing_ratio: [0.8, 0.65, 0.5]
 max_grad_norm: 2.0
 seed: 77
 optimizer:
-  optimizer: 'MADGRAD' # Adam, Adadelta
-  max_lr: 5e-4 # 1e-4
-  min_lr: 5e-5
+  optimizer: 'MADGRAD' # AdamP, MADGRAD
+  max_lr: 1e-4 # 1e-4
+  min_lr: 1e-5
   cycle: 3
-  gamma: 0.5
+  gamma: 0.4
   weight_decay: 0.0 # 1e-4
   scheduler: 'cosine'

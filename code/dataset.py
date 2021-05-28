@@ -76,7 +76,7 @@ def collate_batch(data):
     ]
     return {
         "path": [d["path"] for d in data],
-        "source": [d["source"] for d in data],
+        "source": torch.tensor([d["source"] for d in data]),
         "image": torch.stack([d["image"] for d in data], dim=0),
         "truth": {
             "text": [d["truth"]["text"] for d in data],
@@ -163,8 +163,7 @@ class LoadDataset(Dataset):
 
         if self.transform:
             image_np = np.array(image)
-            augmented = self.transform(image=image_np)
-            image = Image.fromarray(augmented['image'])
+            image = self.transform(image=image_np)['image']
             # image = self.transform(image)
 
         return {"path": item["path"], "truth": item["truth"], "image": image, "source": item["source"]}
