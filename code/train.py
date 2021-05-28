@@ -105,7 +105,10 @@ def run_epoch(
             _, sequence = torch.topk(decoded_values, 1, dim=1)
             sequence = sequence.squeeze(1)
             
-            loss = criterion(decoded_values, expected[:, 1:]) + (aux_criterion(aux_output, aux_label) * 0.4)
+            if train:
+                loss = criterion(decoded_values, expected[:, 1:]) + (aux_criterion(aux_output, aux_label) * 0.4)
+            else:
+                loss = criterion(decoded_values, expected[:, 1:])
 
             if train:
                 optim_params = [
