@@ -1,6 +1,6 @@
 import torch
 import os
-from train import id_to_string
+# from train import id_to_string
 from metrics import word_error_rate, sentence_acc
 from checkpoint import load_checkpoint
 from torchvision import transforms
@@ -12,6 +12,30 @@ from torch.utils.data import DataLoader
 import argparse
 import random
 from tqdm import tqdm
+
+
+def id_to_string(tokens, data_loader,do_eval=0):
+    result = []
+    if do_eval:
+        special_ids = [data_loader.dataset.token_to_id["<PAD>"], data_loader.dataset.token_to_id["<SOS>"],
+                       data_loader.dataset.token_to_id["<EOS>"]]
+
+    for example in tokens:
+        string = ""
+        if do_eval:
+            for token in example:
+                token = token.item()
+                if token not in special_ids:
+                    if token != -1:
+                        string += data_loader.dataset.id_to_token[token] + " "
+        else:
+            for token in example:
+                token = token.item()
+                if token != -1:
+                    string += data_loader.dataset.id_to_token[token] + " "
+
+        result.append(string)
+    return result
 
 
 def main(parser):
@@ -99,7 +123,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint",
         dest="checkpoint",
-        default="./log/satrn/checkpoints/0050.pth",
+        default="./log/satrn/checkpoints/0048.pth",
         type=str,
         help="Path of checkpoint file",
     )

@@ -1,6 +1,5 @@
 import os
 import torch
-from tensorboardX import SummaryWriter
 
 use_cuda = torch.cuda.is_available()
 

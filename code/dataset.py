@@ -41,14 +41,17 @@ def load_vocab(tokens_paths):
 
 def split_gt(groundtruth, proportion=1.0, test_percent=None):
     root = os.path.join(os.path.dirname(groundtruth), "images")
-    with open(groundtruth, "r") as fd:
+    source = os.path.join(os.path.dirname(groundtruth), "source.txt")
+    with open(groundtruth, "r") as fd, open(source, "r") as src:
         data=[]
-        for line in fd:
-            data.append(line.strip().split("\t"))
+        for line, line2 in zip(fd, src):
+            tmp = line.strip().split("\t")
+            tmp.append(int(line2.strip().split("\t")[1]))
+            data.append(tmp)
         random.shuffle(data)
         dataset_len = round(len(data) * proportion)
         data = data[:dataset_len]
-        data = [[os.path.join(root, x[0]), x[1]] for x in data]
+        data = [[os.path.join(root, x[0]), x[1], x[2]] for x in data]
     
     if test_percent:
         test_len = round(len(data) * test_percent)
@@ -118,6 +121,7 @@ class LoadDataset(Dataset):
         self.data = [
             {
                 "path": p,
+                "source": source,
                 "truth": {
                     "text": truth,
                     "encoded": [
@@ -127,7 +131,7 @@ class LoadDataset(Dataset):
                     ],
                 },
             }
-            for p, truth in groundtruth
+            for p, truth, source in groundtruth
         ]
 
     def __len__(self):
@@ -155,7 +159,7 @@ class LoadDataset(Dataset):
             image = Image.fromarray(augmented['image'])
             # image = self.transform(image)
 
-        return {"path": item["path"], "truth": item["truth"], "image": image}
+        return {"path": item["path"], "truth": item["truth"], "image": image, "source": item["source"]}
 
 class LoadEvalDataset(Dataset):
     """Load Dataset"""
@@ -197,7 +201,7 @@ class LoadEvalDataset(Dataset):
                     ],
                 },
             }
-            for p, p1,truth in groundtruth
+            for p, p1, truth in groundtruth
         ]
 
     def __len__(self):
@@ -222,7 +226,7 @@ class LoadEvalDataset(Dataset):
         if self.transform:
             image = self.transform(image)
 
-        return {"path": item["path"], "file_path":item["file_path"],"truth": item["truth"], "image": image}
+        return {"path": item["path"], "file_path":item["file_path"], "truth": item["truth"], "image": image}
 
 def dataset_loader(options, transformed):
 

@@ -69,7 +69,6 @@ def run_epoch(
         model.train()
     else:
         model.eval()
-        teacher_forcing_ratio = 0.0
 
     losses = []
     grad_norms = []
@@ -240,16 +239,15 @@ def main(config_file):
         ]),
         ToTensorV2()
     ])
-
-    '''
-    transformed = transforms.Compose(
-        [
-            # Resize so all images have the same size
-            transforms.Resize((options.input_size.height, options.input_size.width)),
-            transforms.ToTensor(),
-        ]
-    )
-    '''
+    
+    # transformed = transforms.Compose(
+    #     [
+    #         # Resize so all images have the same size
+    #         transforms.Resize((options.input_size.height, options.input_size.width)),
+    #         transforms.ToTensor(),
+    #     ]
+    # )
+    
 
     train_data_loader, validation_data_loader, train_dataset, valid_dataset = dataset_loader(options, transformed)
     print(
@@ -296,6 +294,7 @@ def main(config_file):
         weight_decay=options.optimizer.weight_decay,
     )
     optimizer_state = checkpoint.get("optimizer")
+    
     if optimizer_state:
         optimizer.load_state_dict(optimizer_state)
     for param_group in optimizer.param_groups:
@@ -317,6 +316,11 @@ def main(config_file):
             gamma=options.optimizer.gamma
         )
 
+    scheduler_state = checkpoint.get("scheduler")
+
+    if scheduler_state:
+        lr_scheduler.load_state_dict(scheduler_state)
+
     # Log
     if not os.path.exists(options.prefix):
         os.makedirs(options.prefix)
@@ -334,6 +338,7 @@ def main(config_file):
     validation_wer=checkpoint["validation_wer"]
     validation_losses = checkpoint["validation_losses"]
     learning_rates = checkpoint["lr"]
+    lr_scheduler = checkpoint["scheduler"]
     grad_norms = checkpoint["grad_norm"]
 
     # Train
@@ -347,9 +352,9 @@ def main(config_file):
             pad=len(str(options.num_epochs)),
         )
 
-        if epoch < (options.num_epochs * 0.3):            
+        if epoch < (options.num_epochs * 0.25):            
             teacher_forcing_ratio = options.teacher_forcing_ratio[0]
-        elif epoch >= (options.num_epochs * 0.3) and epoch < (options.num_epochs * 0.8):
+        elif epoch >= (options.num_epochs * 0.25) and epoch < (options.num_epochs * 0.5):
             teacher_forcing_ratio = options.teacher_forcing_ratio[1]
         else:
             teacher_forcing_ratio = options.teacher_forcing_ratio[2]
@@ -435,6 +440,7 @@ def main(config_file):
                 "grad_norm": grad_norms,
                 "model": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
+                "scheduler": lr_scheduler,
                 "configs": option_dict,
                 "token_to_id":train_data_loader.dataset.token_to_id,
                 "id_to_token":train_data_loader.dataset.id_to_token
@@ -479,10 +485,12 @@ def main(config_file):
                 'Train/Sentence_Accuracy': train_epoch_sentence_accuracy,
                 'Train/WER': train_epoch_wer,
                 'Train/Loss': train_result["loss"],
+                'Train/Score': 0.9 * train_epoch_sentence_accuracy + 0.1 * (1 - train_epoch_wer),
                 'Validation/Symbol_Accuracy': validation_epoch_symbol_accuracy,
                 'Validation/Sentence_Accuracy': validation_epoch_sentence_accuracy,
                 'Validation/WER': validation_epoch_wer,
                 'Validation/Loss': validation_result["loss"],
+                'Validation/Score': 0.9 * validation_epoch_sentence_accuracy + 0.1 * (1 - validation_epoch_wer),
                 'Teacher_Forcing_Ratio': teacher_forcing_ratio
             })
 
