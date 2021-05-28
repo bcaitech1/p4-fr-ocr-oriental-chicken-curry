@@ -1,0 +1,71 @@
+network: 'SWIN_SATRN'
+input_size:
+  height: 128
+  width: 256
+
+SATRN:
+  encoder:
+    hidden_dim: 300
+    filter_dim: 600
+    layer_num: 6
+    head_num: 8
+  decoder:
+    src_dim: 300
+    hidden_dim: 128
+    filter_dim: 512
+    layer_num: 3
+    head_num: 8
+
+SWIN_SATRN:
+  encoder:
+    hidden_dim: 384
+    filter_dim: 768
+    layer_num: 6
+    head_num: 8
+  decoder:
+    src_dim: 384
+    hidden_dim: 256
+    filter_dim: 512
+    layer_num: 3
+    head_num: 8
+
+
+Attention:
+  src_dim: 768
+  hidden_dim: 128
+  embedding_dim: 128
+  layer_num: 1
+  cell_type: "LSTM"
+checkpoint: ""
+prefix: "./log/satrn"
+
+data:
+  train:
+    - "/opt/ml/input/data/train_dataset/gt.txt"
+  test:
+    - "/opt/ml/input/data/eval_dataset/input.txt"
+  token_paths:
+    - "/opt/ml/input/data/train_dataset/tokens.txt"  # 241 tokens
+  dataset_proportions:  # proportion of data to take from train (not test)
+    - 1.0
+  random_split: True # if True, random split from train files
+  test_proportions: 0.2 # only if random_split is True
+  crop: True
+  rgb: 1    # 3 for color, 1 for greyscale
+  
+batch_size: 32
+num_workers: 8
+num_epochs: 100
+print_epochs: 1
+dropout_rate: 0.1
+teacher_forcing_ratio: [0.8, 0.65, 0.5]
+max_grad_norm: 2.0
+seed: 924
+optimizer:
+  optimizer: 'MADGRAD' # Adam, Adadelta
+  max_lr: 1e-4 # 1e-4
+  min_lr: 1e-5
+  cycle: 3
+  gamma: 0.5
+  weight_decay: 0.0 # 1e-4
+  scheduler: 'cosine'

@@ -1,4 +1,5 @@
 import os
+import gc
 import wandb
 import argparse
 import multiprocessing
@@ -86,22 +87,28 @@ def run_epoch(
         leave=False,
     ) as pbar:
         for d in data_loader:
-            input = d["image"].to(device)
+            image = d["image"].float().to(device)
+            # print(image.shape, type(image))
+            aux_label = d["source"].float().to(device)
+            # print(aux_label.shape, type(aux_label))
 
             # The last batch may not be a full batch
-            curr_batch_size = len(input)
+            curr_batch_size = len(image)
             expected = d["truth"]["encoded"].to(device)
 
             # Replace -1 with the PAD token
             expected[expected == -1] = data_loader.dataset.token_to_id[PAD]
 
-            output = model(input, expected, train, teacher_forcing_ratio)
+            output = model(image, expected, train, teacher_forcing_ratio)
             
             decoded_values = output.transpose(1, 2)
             _, sequence = torch.topk(decoded_values, 1, dim=1)
             sequence = sequence.squeeze(1)
             
-            loss = criterion(decoded_values, expected[:, 1:])
+            if train:
+                loss = criterion(decoded_values, expected[:, 1:]) #+ (aux_criterion(aux_output, aux_label) * 0.4)
+            else:
+                loss = criterion(decoded_values, expected[:, 1:])
 
             if train:
                 optim_params = [
@@ -125,6 +132,9 @@ def run_epoch(
                     'Learning_rate' : lr_scheduler.get_lr()[0]
                 })
 
+            wandb.log({
+                'Teacher_Forcing_Ratio': teacher_forcing_ratio
+            })
             losses.append(loss.item())
             
             expected[expected == data_loader.dataset.token_to_id[PAD]] = -1
@@ -161,6 +171,8 @@ def run_epoch(
         except:
             result["grad_norm"] = np.mean(grad_norms)
 
+    gc.collect()
+    
     return result
 
 
@@ -224,12 +236,12 @@ def main(config_file):
         )
 
     # Get data
-    transformed = A.Compose([
+    train_transform = A.Compose([
         A.Resize(options.input_size.height, options.input_size.width),
         A.OneOf([
             A.Rotate(),
             A.ShiftScaleRotate(),
-            A.RandomRotate90(),
+            # A.RandomRotate90(),
             A.VerticalFlip()
         ]),
         A.OneOf([
@@ -240,6 +252,11 @@ def main(config_file):
         ToTensorV2()
     ])
     
+    valid_transform = A.Compose([
+        A.Resize(options.input_size.height, options.input_size.width),
+        ToTensorV2()
+    ])
+
     # transformed = transforms.Compose(
     #     [
     #         # Resize so all images have the same size
@@ -249,7 +266,7 @@ def main(config_file):
     # )
     
 
-    train_data_loader, validation_data_loader, train_dataset, valid_dataset = dataset_loader(options, transformed)
+    train_data_loader, validation_data_loader, train_dataset, valid_dataset = dataset_loader(options, train_transform, valid_transform)
     print(
         "[+] Data\n",
         "The number of train samples : {}\n".format(len(train_dataset)),
@@ -316,10 +333,10 @@ def main(config_file):
             gamma=options.optimizer.gamma
         )
 
-    scheduler_state = checkpoint.get("scheduler")
+    # scheduler_state = checkpoint.get("scheduler")
 
-    if scheduler_state:
-        lr_scheduler.load_state_dict(scheduler_state)
+    # if scheduler_state:
+    #     lr_scheduler.load_state_dict(scheduler_state)
 
     # Log
     if not os.path.exists(options.prefix):
@@ -338,7 +355,7 @@ def main(config_file):
     validation_wer=checkpoint["validation_wer"]
     validation_losses = checkpoint["validation_losses"]
     learning_rates = checkpoint["lr"]
-    lr_scheduler = checkpoint["scheduler"]
+    # lr_scheduler = checkpoint["scheduler"]
     grad_norms = checkpoint["grad_norm"]
 
     # Train
@@ -370,7 +387,7 @@ def main(config_file):
             teacher_forcing_ratio,
             options.max_grad_norm,
             device,
-            train=True,
+            train=True
         )
 
 
@@ -440,7 +457,7 @@ def main(config_file):
                 "grad_norm": grad_norms,
                 "model": model.state_dict(),
                 "optimizer": optimizer.state_dict(),
-                "scheduler": lr_scheduler,
+                # "scheduler": lr_scheduler,
                 "configs": option_dict,
                 "token_to_id":train_data_loader.dataset.token_to_id,
                 "id_to_token":train_data_loader.dataset.id_to_token
@@ -490,13 +507,13 @@ def main(config_file):
                 'Validation/Sentence_Accuracy': validation_epoch_sentence_accuracy,
                 'Validation/WER': validation_epoch_wer,
                 'Validation/Loss': validation_result["loss"],
-                'Validation/Score': 0.9 * validation_epoch_sentence_accuracy + 0.1 * (1 - validation_epoch_wer),
-                'Teacher_Forcing_Ratio': teacher_forcing_ratio
+                'Validation/Score': 0.9 * validation_epoch_sentence_accuracy + 0.1 * (1 - validation_epoch_wer)
+                
             })
 
 
 if __name__ == "__main__":
-    wandb.init(project="P-stage4-ocr", reinit=True)
+    wandb.init(project="[P-stage4-ocr]", reinit=True)
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "-c",

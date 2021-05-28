@@ -7,6 +7,11 @@ from PIL import Image, ImageOps
 from torch.utils.data import Dataset
 from torch.utils.data import DataLoader
 from sklearn.model_selection import train_test_split
+from augment import (
+    tia_perspective,
+    tia_stretch,
+    tia_distort
+)
 
 START = "<SOS>"
 END = "<EOS>"
@@ -58,7 +63,7 @@ def split_gt(groundtruth, proportion=1.0, test_percent=None):
         # print(len(data), len(source))
     
     if test_percent:
-        X_train, y_train = train_test_split(data, test_size=test_percent, stratify=source, random_state=77)
+        X_train, y_train = train_test_split(data, test_size=test_percent, stratify=source, random_state=924)
         # test_len = round(len(data) * test_percent)
         # print(len(X_train), type(X_train), len(data[test_len:]), type(data[test_len:]))
         # return data[test_len:], data[:test_len]
@@ -74,8 +79,10 @@ def collate_batch(data):
         d["truth"]["encoded"] + (max_len - len(d["truth"]["encoded"])) * [-1]
         for d in data
     ]
+
     return {
         "path": [d["path"] for d in data],
+        "source": torch.tensor([d["source"] for d in data]),
         "image": torch.stack([d["image"] for d in data], dim=0),
         "truth": {
             "text": [d["truth"]["text"] for d in data],
@@ -142,7 +149,7 @@ class LoadDataset(Dataset):
         ]
 
     def __len__(self):
-        return len(self.data)
+        return len(self.data)        
 
     def __getitem__(self, i):
         item = self.data[i]
@@ -162,8 +169,7 @@ class LoadDataset(Dataset):
 
         if self.transform:
             image_np = np.array(image)
-            augmented = self.transform(image=image_np)
-            image = Image.fromarray(augmented['image'])
+            image = self.transform(image=image_np)['image']
             # image = self.transform(image)
 
         return {"path": item["path"], "truth": item["truth"], "image": image, "source": item["source"]}
@@ -235,7 +241,7 @@ class LoadEvalDataset(Dataset):
 
         return {"path": item["path"], "file_path":item["file_path"], "truth": item["truth"], "image": image}
 
-def dataset_loader(options, transformed):
+def dataset_loader(options, train_transform, valid_transform):
 
     # Read data
     train_data, valid_data = [], [] 
@@ -259,7 +265,7 @@ def dataset_loader(options, transformed):
 
     # Load data
     train_dataset = LoadDataset(
-        train_data, options.data.token_paths, crop=options.data.crop, transform=transformed, rgb=options.data.rgb
+        train_data, options.data.token_paths, crop=options.data.crop, transform=train_transform, rgb=options.data.rgb
     )
     train_data_loader = DataLoader(
         train_dataset,
@@ -270,7 +276,7 @@ def dataset_loader(options, transformed):
     )
 
     valid_dataset = LoadDataset(
-        valid_data, options.data.token_paths, crop=options.data.crop, transform=transformed, rgb=options.data.rgb
+        valid_data, options.data.token_paths, crop=options.data.crop, transform=valid_transform, rgb=options.data.rgb
     )
     valid_data_loader = DataLoader(
         valid_dataset,

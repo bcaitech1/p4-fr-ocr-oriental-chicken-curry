@@ -11,6 +11,7 @@ from easydict import EasyDict
 
 from networks.Attention import Attention
 from networks.SATRN import SATRN
+from networks.SWIN_SATRN import SWIN_SATRN
 
 
 def seed_everything(seed: int):
@@ -35,8 +36,8 @@ def get_network(
 
     if model_type == "SATRN":
         model = SATRN(FLAGS, train_dataset, model_checkpoint).to(device)
-    elif model_type == "CRNN":
-        model = CRNN()
+    elif model_type == "SWIN_SATRN":
+        model = SWIN_SATRN(FLAGS, train_dataset, model_checkpoint).to(device)
     elif model_type == "Attention":
         model = Attention(FLAGS, train_dataset, model_checkpoint).to(device)
     else:

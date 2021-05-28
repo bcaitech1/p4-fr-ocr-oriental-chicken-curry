@@ -1,0 +1,42 @@
+network: SRN
+
+inH: 128
+inW: 256
+
+model:
+  num_fiducial: 20
+  inp_channel: 1
+  out_channel: 512
+  position_dim: 65
+  max_sequence: 252
+  token_len: 245
+
+checkpoint: ""
+prefix: "./log/satrn"
+
+data:
+  train:
+    - "/opt/ml/input/data/train_dataset/gt.txt"
+  test:
+    - ""
+  token_paths:
+    - "/opt/ml/input/data/train_dataset/tokens.txt"  # 241 tokens
+  dataset_proportions:  # proportion of data to take from train (not test)
+    - 1.0
+  random_split: True # if True, random split from train files
+  test_proportions: 0.2 # only if random_split is True
+  crop: True
+
+batch_size: 36
+num_workers: 8
+num_epochs: 50
+print_epochs: 1
+dropout_rate: 0.1
+teacher_forcing_ratio: 0.5
+max_grad_norm: 2.0
+seed: 1234
+optimizer:
+  optimizer: 'Adam' # Adam, Adadelta
+  lr: 5e-4 # 1e-4
+  weight_decay: 1e-4
+  is_cycle: True
