@@ -76,6 +76,7 @@ def collate_batch(data):
     ]
     return {
         "path": [d["path"] for d in data],
+        "source": [d["source"] for d in data],
         "image": torch.stack([d["image"] for d in data], dim=0),
         "truth": {
             "text": [d["truth"]["text"] for d in data],
