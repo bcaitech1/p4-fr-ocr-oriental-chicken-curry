@@ -1,1 +1,0 @@
-RuntimeError: size mismatch, m1: [25600 x 512], m2: [215 x 245] at /pytorch/aten/src/THC/generic/THCTensorMathBlas.cu:290

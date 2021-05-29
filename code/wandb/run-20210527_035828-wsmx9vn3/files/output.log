@@ -1,1 +1,0 @@
-KeyError: 'You have to pass data to augmentations as named arguments, for example: aug(image=image)'
