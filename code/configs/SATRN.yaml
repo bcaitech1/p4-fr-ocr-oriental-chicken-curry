@@ -49,8 +49,8 @@ augmentation: 'baseline'
 max_grad_norm: 2.0
 seed: 914
 optimizer:
-  optimizer: 'Madgrad' # Adam, Adadelta
+  optimizer: 'Adam' # Adam, Adadelta
   lr: 5e-4 # 1e-4
   weight_decay: 1e-4
-  type: "cawr"
+  type: "cycle"
   # is_cycle: True

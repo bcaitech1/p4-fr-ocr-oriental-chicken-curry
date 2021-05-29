@@ -94,6 +94,7 @@ def run_epoch(
     teacher_forcing_ratio,
     max_grad_norm,
     device,
+    model_type,
     train=True,
 ):
     # Disables autograd during validation mode
@@ -119,7 +120,8 @@ def run_epoch(
         leave=False,
     ) as pbar:
         for d in data_loader:
-            input = d["image"].to(device)
+            input = d["image"].float().to(device)
+            input = input.unsqueeze(1)
 
             # The last batch may not be a full batch
             curr_batch_size = len(input)
@@ -128,8 +130,13 @@ def run_epoch(
             # Replace -1 with the PAD token
             # -1로 되어 있는 부분을 PAD Token 아이디로 대체
             expected[expected == -1] = data_loader.dataset.token_to_id[PAD]
-
-            output = model(input, expected, train, teacher_forcing_ratio, epoch, ratio_cycle)
+            
+            if model_type == "Attention":
+                output = model(input, expected, train, teacher_forcing_ratio, epoch, ratio_cycle)
+            elif model_type == "SRN":
+                output = model(input)
+            elif model_type == "SATRN":
+                output = model(input, expected, train, teacher_forcing_ratio)
             
             decoded_values = output.transpose(1, 2)
             _, sequence = torch.topk(decoded_values, 1, dim=1)
@@ -222,7 +229,7 @@ def main(config_file):
 
     # config파일에 체크포인트 모델의 경로 지정시 모델을 가져옴
     checkpoint = (
-        load_checkpoint(options.checkpoint, use_cuda=torch.cuda.is_available())
+        load_checkpoint(options.checkpoint, cuda=torch.cuda.is_available())
         if options.checkpoint != ""
         else default_checkpoint
     )
@@ -239,7 +246,7 @@ def main(config_file):
     # )
     
     # 데이터셋을 받아옴
-    train_data_loader, validation_data_loader, train_dataset, valid_dataset = get_dataset(options)
+    train_data_loader, validation_data_loader, train_dataset, valid_dataset, _ = get_dataset(options)
 
     one_epoch_step = int(len(train_data_loader) / options.batch_size)
 
@@ -332,7 +339,7 @@ def main(config_file):
             pad=len(str(options.num_epochs)),
         )
 
-        # Train
+        # # Train
         train_result = run_epoch(
             epoch,
             options.ratio_cycle,
@@ -345,6 +352,7 @@ def main(config_file):
             options.teacher_forcing_ratio,
             options.max_grad_norm,
             device,
+            model_type = options.network,
             train=True,
         )
 
@@ -378,6 +386,7 @@ def main(config_file):
             options.teacher_forcing_ratio,
             options.max_grad_norm,
             device,
+            model_type = options.network,
             train=False,
         )
         validation_losses.append(validation_result["loss"])

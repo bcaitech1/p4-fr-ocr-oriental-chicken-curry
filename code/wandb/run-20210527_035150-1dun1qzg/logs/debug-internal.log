@@ -1,0 +1,112 @@
+2021-05-27 03:51:50,868 INFO    MainThread:13881 [internal.py:wandb_internal():91] W&B internal server running at pid: 13881, started at: 2021-05-27 03:51:50.868311
+2021-05-27 03:51:50,871 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: check_version
+2021-05-27 03:51:50,871 DEBUG   SenderThread:13881 [sender.py:send():176] send: header
+2021-05-27 03:51:50,872 DEBUG   SenderThread:13881 [sender.py:send_request():186] send_request: check_version
+2021-05-27 03:51:50,871 INFO    WriterThread:13881 [datastore.py:open_for_write():77] open: /opt/ml/code/wandb/run-20210527_035150-1dun1qzg/run-1dun1qzg.wandb
+2021-05-27 03:51:51,062 DEBUG   SenderThread:13881 [sender.py:send():176] send: run
+2021-05-27 03:51:51,069 DEBUG   SenderThread:13881 [git.py:repo():33] git repository is invalid
+2021-05-27 03:51:51,345 INFO    SenderThread:13881 [dir_watcher.py:__init__():168] watching files in: /opt/ml/code/wandb/run-20210527_035150-1dun1qzg/files
+2021-05-27 03:51:51,345 INFO    SenderThread:13881 [sender.py:_start_run_threads():699] run started: 1dun1qzg with start time 1622087510
+2021-05-27 03:51:51,345 DEBUG   SenderThread:13881 [sender.py:send():176] send: summary
+2021-05-27 03:51:51,346 INFO    SenderThread:13881 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-05-27 03:51:51,348 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: run_start
+2021-05-27 03:51:51,352 DEBUG   HandlerThread:13881 [meta.py:__init__():39] meta init
+2021-05-27 03:51:51,352 DEBUG   HandlerThread:13881 [meta.py:__init__():53] meta init done
+2021-05-27 03:51:51,352 DEBUG   HandlerThread:13881 [meta.py:probe():210] probe
+2021-05-27 03:51:51,358 DEBUG   HandlerThread:13881 [git.py:repo():33] git repository is invalid
+2021-05-27 03:51:51,358 DEBUG   HandlerThread:13881 [meta.py:_save_pip():57] save pip
+2021-05-27 03:51:51,359 DEBUG   HandlerThread:13881 [meta.py:_save_pip():71] save pip done
+2021-05-27 03:51:51,359 DEBUG   HandlerThread:13881 [meta.py:_save_conda():78] save conda
+2021-05-27 03:51:52,347 INFO    Thread-8  :13881 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210527_035150-1dun1qzg/files/wandb-summary.json
+2021-05-27 03:51:52,347 INFO    Thread-8  :13881 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210527_035150-1dun1qzg/files/conda-environment.yaml
+2021-05-27 03:51:52,347 INFO    Thread-8  :13881 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210527_035150-1dun1qzg/files/requirements.txt
+2021-05-27 03:51:54,035 DEBUG   HandlerThread:13881 [meta.py:_save_conda():86] save conda done
+2021-05-27 03:51:54,036 DEBUG   HandlerThread:13881 [meta.py:probe():252] probe done
+2021-05-27 03:51:54,040 DEBUG   SenderThread:13881 [sender.py:send():176] send: files
+2021-05-27 03:51:54,040 INFO    SenderThread:13881 [sender.py:_save_file():821] saving file wandb-metadata.json with policy now
+2021-05-27 03:51:54,044 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: stop_status
+2021-05-27 03:51:54,044 DEBUG   SenderThread:13881 [sender.py:send_request():186] send_request: stop_status
+2021-05-27 03:51:54,346 INFO    Thread-8  :13881 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210527_035150-1dun1qzg/files/wandb-metadata.json
+2021-05-27 03:51:54,346 INFO    Thread-8  :13881 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210527_035150-1dun1qzg/files/output.log
+2021-05-27 03:51:54,641 INFO    Thread-11 :13881 [upload_job.py:push():133] Uploaded file /tmp/tmpybpccx92wandb/ervszaci-wandb-metadata.json
+2021-05-27 03:51:56,070 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: poll_exit
+2021-05-27 03:51:56,070 DEBUG   SenderThread:13881 [sender.py:send():176] send: telemetry
+2021-05-27 03:51:56,070 DEBUG   SenderThread:13881 [sender.py:send():176] send: exit
+2021-05-27 03:51:56,070 INFO    SenderThread:13881 [sender.py:send_exit():281] handling exit code: 1
+2021-05-27 03:51:56,071 INFO    SenderThread:13881 [sender.py:send_exit():289] send defer
+2021-05-27 03:51:56,071 DEBUG   SenderThread:13881 [sender.py:send_request():186] send_request: poll_exit
+2021-05-27 03:51:56,071 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: defer
+2021-05-27 03:51:56,071 INFO    HandlerThread:13881 [handler.py:handle_request_defer():138] handle defer: 0
+2021-05-27 03:51:56,072 DEBUG   SenderThread:13881 [sender.py:send_request():186] send_request: defer
+2021-05-27 03:51:56,072 INFO    SenderThread:13881 [sender.py:send_request_defer():298] handle sender defer: 0
+2021-05-27 03:51:56,072 INFO    SenderThread:13881 [sender.py:send_request_defer():336] send defer: 1
+2021-05-27 03:51:56,072 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: defer
+2021-05-27 03:51:56,072 INFO    HandlerThread:13881 [handler.py:handle_request_defer():138] handle defer: 1
+2021-05-27 03:51:56,091 DEBUG   SenderThread:13881 [sender.py:send_request():186] send_request: defer
+2021-05-27 03:51:56,092 INFO    SenderThread:13881 [sender.py:send_request_defer():298] handle sender defer: 1
+2021-05-27 03:51:56,092 INFO    SenderThread:13881 [sender.py:send_request_defer():336] send defer: 2
+2021-05-27 03:51:56,092 DEBUG   SenderThread:13881 [sender.py:send():176] send: stats
+2021-05-27 03:51:56,092 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: defer
+2021-05-27 03:51:56,092 INFO    HandlerThread:13881 [handler.py:handle_request_defer():138] handle defer: 2
+2021-05-27 03:51:56,093 DEBUG   SenderThread:13881 [sender.py:send_request():186] send_request: defer
+2021-05-27 03:51:56,093 INFO    SenderThread:13881 [sender.py:send_request_defer():298] handle sender defer: 2
+2021-05-27 03:51:56,093 INFO    SenderThread:13881 [sender.py:send_request_defer():336] send defer: 3
+2021-05-27 03:51:56,093 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: defer
+2021-05-27 03:51:56,093 INFO    HandlerThread:13881 [handler.py:handle_request_defer():138] handle defer: 3
+2021-05-27 03:51:56,093 DEBUG   SenderThread:13881 [sender.py:send():176] send: summary
+2021-05-27 03:51:56,093 INFO    SenderThread:13881 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-05-27 03:51:56,094 DEBUG   SenderThread:13881 [sender.py:send_request():186] send_request: defer
+2021-05-27 03:51:56,094 INFO    SenderThread:13881 [sender.py:send_request_defer():298] handle sender defer: 3
+2021-05-27 03:51:56,094 INFO    SenderThread:13881 [sender.py:send_request_defer():336] send defer: 4
+2021-05-27 03:51:56,094 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: defer
+2021-05-27 03:51:56,094 INFO    HandlerThread:13881 [handler.py:handle_request_defer():138] handle defer: 4
+2021-05-27 03:51:56,094 DEBUG   SenderThread:13881 [sender.py:send_request():186] send_request: defer
+2021-05-27 03:51:56,094 INFO    SenderThread:13881 [sender.py:send_request_defer():298] handle sender defer: 4
+2021-05-27 03:51:56,173 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: poll_exit
+2021-05-27 03:51:56,217 ERROR   FileStreamThread:13881 [file_stream.py:_thread_except_body():286] generic exception in filestream thread
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/site-packages/wandb/sdk/internal/file_stream.py", line 282, in _thread_except_body
+    self._thread_body()
+  File "/opt/conda/lib/python3.7/site-packages/wandb/sdk/internal/file_stream.py", line 260, in _thread_body
+    self._send(ready_chunks)
+  File "/opt/conda/lib/python3.7/site-packages/wandb/sdk/internal/file_stream.py", line 327, in _send
+    retry_callback=self._api.retry_callback,
+  File "/opt/conda/lib/python3.7/site-packages/wandb/sdk/internal/file_stream.py", line 295, in _handle_response
+    raise response
+  File "/opt/conda/lib/python3.7/site-packages/wandb/sdk/internal/file_stream.py", line 382, in request_with_retry
+    response.raise_for_status()
+  File "/opt/conda/lib/python3.7/site-packages/requests/models.py", line 941, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 404 Client Error: Not Found for url: https://api.wandb.ai/files/ganta/OCR/1dun1qzg/file_stream
+2021-05-27 03:51:56,285 ERROR   SenderThread:13881 [internal_api.py:execute():130] 409 response executing GraphQL.
+2021-05-27 03:51:56,286 ERROR   SenderThread:13881 [internal_api.py:execute():131] {"errors":[{"message":"Error 1062: Duplicate entry '324675-1dun1qzg' for key 'PRIMARY'","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2021-05-27 03:51:56,347 INFO    Thread-8  :13881 [dir_watcher.py:_on_file_modified():229] file/dir modified: /opt/ml/code/wandb/run-20210527_035150-1dun1qzg/files/output.log
+2021-05-27 03:51:56,347 INFO    Thread-8  :13881 [dir_watcher.py:_on_file_modified():229] file/dir modified: /opt/ml/code/wandb/run-20210527_035150-1dun1qzg/files/wandb-summary.json
+2021-05-27 03:51:57,505 ERROR   SenderThread:13881 [internal_api.py:execute():130] 409 response executing GraphQL.
+2021-05-27 03:51:57,505 ERROR   SenderThread:13881 [internal_api.py:execute():131] {"errors":[{"message":"Error 1062: Duplicate entry '324675-1dun1qzg' for key 'PRIMARY'","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2021-05-27 03:51:59,753 ERROR   SenderThread:13881 [internal_api.py:execute():130] 409 response executing GraphQL.
+2021-05-27 03:51:59,753 ERROR   SenderThread:13881 [internal_api.py:execute():131] {"errors":[{"message":"Error 1062: Duplicate entry '324675-1dun1qzg' for key 'PRIMARY'","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2021-05-27 03:51:59,754 ERROR   SenderThread:13881 [retry.py:__call__():126] Retry attempt failed:
+Traceback (most recent call last):
+  File "/opt/conda/lib/python3.7/site-packages/wandb/sdk/lib/retry.py", line 102, in __call__
+    result = self._call_fn(*args, **kwargs)
+  File "/opt/conda/lib/python3.7/site-packages/wandb/sdk/internal/internal_api.py", line 133, in execute
+    six.reraise(*sys.exc_info())
+  File "/opt/conda/lib/python3.7/site-packages/six.py", line 703, in reraise
+    raise value
+  File "/opt/conda/lib/python3.7/site-packages/wandb/sdk/internal/internal_api.py", line 127, in execute
+    return self.client.execute(*args, **kwargs)
+  File "/opt/conda/lib/python3.7/site-packages/wandb/vendor/gql-0.2.0/gql/client.py", line 52, in execute
+    result = self._get_result(document, *args, **kwargs)
+  File "/opt/conda/lib/python3.7/site-packages/wandb/vendor/gql-0.2.0/gql/client.py", line 60, in _get_result
+    return self.transport.execute(document, *args, **kwargs)
+  File "/opt/conda/lib/python3.7/site-packages/wandb/vendor/gql-0.2.0/gql/transport/requests.py", line 39, in execute
+    request.raise_for_status()
+  File "/opt/conda/lib/python3.7/site-packages/requests/models.py", line 941, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 409 Client Error: Conflict for url: https://api.wandb.ai/graphql
+2021-05-27 03:52:01,274 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: poll_exit
+2021-05-27 03:52:04,821 ERROR   SenderThread:13881 [internal_api.py:execute():130] 409 response executing GraphQL.
+2021-05-27 03:52:04,822 ERROR   SenderThread:13881 [internal_api.py:execute():131] {"errors":[{"message":"Error 1062: Duplicate entry '324675-1dun1qzg' for key 'PRIMARY'","path":["upsertBucket"]}],"data":{"upsertBucket":null}}
+2021-05-27 03:52:06,375 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: poll_exit
+2021-05-27 03:52:11,476 DEBUG   HandlerThread:13881 [handler.py:handle_request():121] handle_request: poll_exit

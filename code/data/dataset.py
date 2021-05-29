@@ -138,6 +138,70 @@ def collate_eval_batch(data):
         },
     }
 
+def srn_collate_batch(data):
+    """ train dataset에서 token id 부분에 padding을 붙히는 작업(배치 단위)
+
+    Args:
+        data(Dataset) : 데이터셋
+    
+    Returns:
+        dict : encoded부분에 padding작업이 추가된 Dataset
+    """
+    # print("d[image] type", type(data[0]["image"]))
+    # print("d[image] shape", data[0]["image"].shape)
+
+    max_len = 201
+    # Padding with -1, will later be replaced with the PAD token
+    padded_encoded = []
+    for d in data:
+        temp =  d["truth"]["encoded"] + (max_len - len(d["truth"]["encoded"])) * [-1]
+        padded_encoded.append(temp[:201])
+
+    # padded_encoded = [
+    #     d["truth"]["encoded"] + (max_len - len(d["truth"]["encoded"])) * [-1]
+    #     for d in data
+    # ]
+
+    return {
+        "path": [d["path"] for d in data],
+        "image": torch.stack([d["image"] for d in data], dim=0),
+        "truth": {
+            "text": [d["truth"]["text"] for d in data],
+            "encoded": torch.tensor(padded_encoded)
+        },
+    }
+
+def srn_collate_eval_batch(data):
+    """ test dataset에서 token id 부분에 padding을 붙히는 작업(배치 단위)
+
+    Args:
+        data(Dataset) : 데이터셋
+    
+    Returns:
+        dict : encoded부분에 padding작업이 추가된 Dataset
+    """
+    max_len = 201
+    # Padding with -1, will later be replaced with the PAD token
+    padded_encoded = []
+    for d in data:
+        temp =  d["truth"]["encoded"] + (max_len - len(d["truth"]["encoded"])) * [-1]
+        padded_encoded.append(temp[:201])
+
+    # padded_encoded = [
+    #     d["truth"]["encoded"] + (max_len - len(d["truth"]["encoded"])) * [-1]
+    #     for d in data
+    # ]
+
+    return {
+        "path": [d["path"] for d in data],
+        "file_path":[d["file_path"] for d in data],
+        "image": torch.stack([d["image"] for d in data], dim=0),
+        "truth": {
+            "text": [d["truth"]["text"] for d in data],
+            "encoded": torch.tensor(padded_encoded)
+        },
+    }
+
 class LoadDataset(Dataset):
     """Load Dataset"""
 
@@ -273,10 +337,10 @@ class LoadEvalDataset(Dataset):
 
         if self.transform:
             image = self.transform(image)
-        if self.transform:
-            transformed = self.transform(image=np.array(image))
-            image = transformed["image"]
-            image = image.float()
+        # if self.transform:
+        #     transformed = self.transform(image=np.array(image))
+        #     image = transformed["image"]
+        #     image = image.float()
 
         return {"path": item["path"], "file_path":item["file_path"],"truth": item["truth"], "image": image}
 
@@ -313,23 +377,42 @@ def dataset_loader(options, train_transformed, valid_transformed):
     train_dataset = LoadDataset(
         train_data, options.data.token_paths, crop=options.data.crop, transform=train_transformed, rgb=options.data.rgb
     )
-    train_data_loader = DataLoader(
-        train_dataset,
-        batch_size=options.batch_size,
-        shuffle=True,
-        num_workers=options.num_workers,
-        collate_fn=collate_batch,
-    )
+
+    if options.network == "SRN":
+        train_data_loader = DataLoader(
+            train_dataset,
+            batch_size=options.batch_size,
+            shuffle=True,
+            num_workers=options.num_workers,
+            collate_fn=srn_collate_batch,
+        )
+    else:
+        train_data_loader = DataLoader(
+            train_dataset,
+            batch_size=options.batch_size,
+            shuffle=True,
+            num_workers=options.num_workers,
+            collate_fn=collate_batch,
+        )
 
     valid_dataset = LoadDataset(
         valid_data, options.data.token_paths, crop=options.data.crop, transform=valid_transformed, rgb=options.data.rgb
     )
-    valid_data_loader = DataLoader(
-        valid_dataset,
-        batch_size=options.batch_size,
-        shuffle=False,
-        num_workers=options.num_workers,
-        collate_fn=collate_batch,
-    )
+    if options.network == "SRN":
+        valid_data_loader = DataLoader(
+            valid_dataset,
+            batch_size=options.batch_size,
+            shuffle=False,
+            num_workers=options.num_workers,
+            collate_fn=srn_collate_batch,
+        )
+    else:
+        valid_data_loader = DataLoader(
+            valid_dataset,
+            batch_size=options.batch_size,
+            shuffle=False,
+            num_workers=options.num_workers,
+            collate_fn=collate_batch,
+        )
 
     return train_data_loader, valid_data_loader, train_dataset, valid_dataset

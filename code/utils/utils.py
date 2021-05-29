@@ -2,6 +2,7 @@ import torch.optim as optim
 
 from networks.Attention import Attention
 from networks.SATRN import SATRN
+from networks.SRN import SRN
 from madgrad import MADGRAD # madgrad optimizer 추가
 
 
@@ -16,6 +17,8 @@ def get_network(model_type,FLAGS,model_checkpoint,device,train_dataset):
         model = CRNN()
     elif model_type == "Attention":
         model = Attention(FLAGS, train_dataset, model_checkpoint).to(device)
+    elif model_type == 'SRN':
+        model = SRN(FLAGS, train_dataset).to(device)
     else:
         raise NotImplementedError
 

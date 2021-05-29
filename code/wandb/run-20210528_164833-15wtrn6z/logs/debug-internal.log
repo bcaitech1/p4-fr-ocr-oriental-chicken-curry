@@ -1,0 +1,35 @@
+2021-05-28 16:48:33,966 INFO    MainThread:10394 [internal.py:wandb_internal():91] W&B internal server running at pid: 10394, started at: 2021-05-28 16:48:33.965747
+2021-05-28 16:48:33,968 INFO    WriterThread:10394 [datastore.py:open_for_write():77] open: /opt/ml/code/wandb/run-20210528_164833-15wtrn6z/run-15wtrn6z.wandb
+2021-05-28 16:48:33,968 DEBUG   HandlerThread:10394 [handler.py:handle_request():121] handle_request: check_version
+2021-05-28 16:48:33,969 DEBUG   SenderThread:10394 [sender.py:send():176] send: header
+2021-05-28 16:48:33,969 DEBUG   SenderThread:10394 [sender.py:send_request():186] send_request: check_version
+2021-05-28 16:48:34,141 DEBUG   SenderThread:10394 [sender.py:send():176] send: run
+2021-05-28 16:48:34,153 DEBUG   SenderThread:10394 [git.py:repo():33] git repository is invalid
+2021-05-28 16:48:34,373 INFO    SenderThread:10394 [dir_watcher.py:__init__():168] watching files in: /opt/ml/code/wandb/run-20210528_164833-15wtrn6z/files
+2021-05-28 16:48:34,373 INFO    SenderThread:10394 [sender.py:_start_run_threads():699] run started: 15wtrn6z with start time 1622220513
+2021-05-28 16:48:34,373 DEBUG   SenderThread:10394 [sender.py:send():176] send: summary
+2021-05-28 16:48:34,373 INFO    SenderThread:10394 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-05-28 16:48:34,376 DEBUG   HandlerThread:10394 [handler.py:handle_request():121] handle_request: run_start
+2021-05-28 16:48:34,380 DEBUG   HandlerThread:10394 [meta.py:__init__():39] meta init
+2021-05-28 16:48:34,380 DEBUG   HandlerThread:10394 [meta.py:__init__():53] meta init done
+2021-05-28 16:48:34,380 DEBUG   HandlerThread:10394 [meta.py:probe():210] probe
+2021-05-28 16:48:34,387 DEBUG   HandlerThread:10394 [git.py:repo():33] git repository is invalid
+2021-05-28 16:48:34,387 DEBUG   HandlerThread:10394 [meta.py:_save_pip():57] save pip
+2021-05-28 16:48:34,387 DEBUG   HandlerThread:10394 [meta.py:_save_pip():71] save pip done
+2021-05-28 16:48:34,388 DEBUG   HandlerThread:10394 [meta.py:_save_conda():78] save conda
+2021-05-28 16:48:35,374 INFO    Thread-8  :10394 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210528_164833-15wtrn6z/files/conda-environment.yaml
+2021-05-28 16:48:35,375 INFO    Thread-8  :10394 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210528_164833-15wtrn6z/files/requirements.txt
+2021-05-28 16:48:35,375 INFO    Thread-8  :10394 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210528_164833-15wtrn6z/files/wandb-summary.json
+2021-05-28 16:48:37,092 DEBUG   HandlerThread:10394 [meta.py:_save_conda():86] save conda done
+2021-05-28 16:48:37,093 DEBUG   HandlerThread:10394 [meta.py:probe():252] probe done
+2021-05-28 16:48:37,096 DEBUG   SenderThread:10394 [sender.py:send():176] send: files
+2021-05-28 16:48:37,096 INFO    SenderThread:10394 [sender.py:_save_file():821] saving file wandb-metadata.json with policy now
+2021-05-28 16:48:37,100 DEBUG   HandlerThread:10394 [handler.py:handle_request():121] handle_request: stop_status
+2021-05-28 16:48:37,101 DEBUG   SenderThread:10394 [sender.py:send_request():186] send_request: stop_status
+2021-05-28 16:48:37,374 INFO    Thread-8  :10394 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210528_164833-15wtrn6z/files/output.log
+2021-05-28 16:48:37,374 INFO    Thread-8  :10394 [dir_watcher.py:_on_file_created():216] file/dir created: /opt/ml/code/wandb/run-20210528_164833-15wtrn6z/files/wandb-metadata.json
+2021-05-28 16:48:37,776 INFO    Thread-11 :10394 [upload_job.py:push():133] Uploaded file /tmp/tmpjgb_3codwandb/3qdjwhth-wandb-metadata.json
+2021-05-28 16:48:49,560 DEBUG   SenderThread:10394 [sender.py:send():176] send: history
+2021-05-28 16:48:49,560 DEBUG   SenderThread:10394 [sender.py:send():176] send: summary
+2021-05-28 16:48:49,562 INFO    SenderThread:10394 [sender.py:_save_file():821] saving file wandb-summary.json with policy end
+2021-05-28 16:48:50,378 INFO    Thread-8  :10394 [dir_watcher.py:_on_file_modified():229] file/dir modified: /opt/ml/code/wandb/run-20210528_164833-15wtrn6z/files/wandb-summary.json

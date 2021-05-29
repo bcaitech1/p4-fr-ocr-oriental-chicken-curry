@@ -1,0 +1,1 @@
+{"epoch": 2, "train/loss": 0.8370862737610624, "train/symbol_accuracy": 0.2051935319890586, "train/sentence_accuracy": 0.0, "train/wer": 0.7344675658506393, "val/losses": 1.0489992545201228, "val/symbol_accuracy": 0.05333467941074552, "val/sentence_accuracy": 0.0, "val/wer": 0.761802972068949, "learning_rate": 1e-06, "_runtime": 1266, "_timestamp": 1622086577, "_step": 1}

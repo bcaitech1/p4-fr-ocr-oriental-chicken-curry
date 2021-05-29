@@ -102,9 +102,10 @@ def get_dataset(options):
         Dataloader : valid data loader
         Dataset : train data set
         Dataset : valid data set
+        test 데이터 Augmentation
     """
     
-    train_transformed, valid_transformed, _ = get_transforms(options.augmentation, options.input_size.height,options.input_size.width)
+    train_transformed, valid_transformed, test_transformed = get_transforms(options.augmentation, options.input_size.height,options.input_size.width)
 
     # train_transformed = transforms.Compose(
     #     [
@@ -131,7 +132,7 @@ def get_dataset(options):
     logger.info("The number of classes : {}".format(len(train_dataset.token_to_id)))
     logger.info("--------------------------------------------------\n")
 
-    return train_data_loader, validation_data_loader, train_dataset, valid_dataset
+    return train_data_loader, validation_data_loader, train_dataset, valid_dataset, test_transformed
 
 def opt_param_log(options,enc_params_to_optimise, dec_params_to_optimise):
     """ optimizing할 파라미터 로그
