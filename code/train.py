@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 import albumentations as A
-from albumentations.pytorch.transforms import ToTensorV2
+from albumentations.pytorch.transforms import ToTensor
 from torchvision import transforms
 import yaml
 from tqdm import tqdm
@@ -131,10 +131,7 @@ def run_epoch(
                 wandb.log({
                     'Learning_rate' : lr_scheduler.get_lr()[0]
                 })
-
-            wandb.log({
-                'Teacher_Forcing_Ratio': teacher_forcing_ratio
-            })
+            
             losses.append(loss.item())
             
             expected[expected == data_loader.dataset.token_to_id[PAD]] = -1
@@ -239,7 +236,10 @@ def main(config_file):
         A.OneOf([
             A.Rotate(),
             A.ShiftScaleRotate(),
-            A.RandomRotate90(),
+            A.RandomRotate90()            
+        ]),
+        A.OneOf([
+            A.HorizontalFlip(),
             A.VerticalFlip()
         ]),
         A.OneOf([
@@ -247,12 +247,12 @@ def main(config_file):
             A.Blur(),
             A.GaussianBlur()
         ]),
-        ToTensorV2()
+        ToTensor()
     ])
     
     valid_transform = A.Compose([
         A.Resize(options.input_size.height, options.input_size.width),
-        ToTensorV2()
+        ToTensor()
     ])
 
     # transformed = transforms.Compose(
@@ -390,8 +390,6 @@ def main(config_file):
             train=True
         )
 
-
-
         train_losses.append(train_result["loss"])
         grad_norms.append(train_result["grad_norm"])
         train_epoch_symbol_accuracy = (
@@ -508,8 +506,8 @@ def main(config_file):
                 'Validation/Sentence_Accuracy': validation_epoch_sentence_accuracy,
                 'Validation/WER': validation_epoch_wer,
                 'Validation/Loss': validation_result["loss"],
-                'Validation/Score': 0.9 * validation_epoch_sentence_accuracy + 0.1 * (1 - validation_epoch_wer)
-                
+                'Validation/Score': 0.9 * validation_epoch_sentence_accuracy + 0.1 * (1 - validation_epoch_wer),
+                'Teacher_Forcing_Ratio': teacher_forcing_ratio            
             })
 
 

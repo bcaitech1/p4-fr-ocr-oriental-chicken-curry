@@ -58,7 +58,7 @@ def split_gt(groundtruth, proportion=1.0, test_percent=None):
         # print(len(data), len(source))
     
     if test_percent:
-        X_train, y_train = train_test_split(data, test_size=test_percent, stratify=source, random_state=77)
+        X_train, y_train = train_test_split(data, test_size=test_percent, stratify=source, random_state=777)
         # test_len = round(len(data) * test_percent)
         # print(len(X_train), type(X_train), len(data[test_len:]), type(data[test_len:]))
         # return data[test_len:], data[:test_len]
