@@ -29,7 +29,7 @@ transformed = A.Compose([
             A.Blur(),
             A.GaussianBlur()
         ]),
-        ToTensor()
+        ToTensorV2()
     ])
 
 
