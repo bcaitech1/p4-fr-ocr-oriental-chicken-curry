@@ -1,6 +1,8 @@
 import torch
 import os
-# from train import id_to_string
+import albumentations as A
+from albumentations.pytorch.transforms import ToTensor, ToTensorV2
+from train import id_to_string
 from metrics import word_error_rate, sentence_acc
 from checkpoint import load_checkpoint
 from torchvision import transforms
@@ -12,30 +14,6 @@ from torch.utils.data import DataLoader
 import argparse
 import random
 from tqdm import tqdm
-
-
-def id_to_string(tokens, data_loader,do_eval=0):
-    result = []
-    if do_eval:
-        special_ids = [data_loader.dataset.token_to_id["<PAD>"], data_loader.dataset.token_to_id["<SOS>"],
-                       data_loader.dataset.token_to_id["<EOS>"]]
-
-    for example in tokens:
-        string = ""
-        if do_eval:
-            for token in example:
-                token = token.item()
-                if token not in special_ids:
-                    if token != -1:
-                        string += data_loader.dataset.id_to_token[token] + " "
-        else:
-            for token in example:
-                token = token.item()
-                if token != -1:
-                    string += data_loader.dataset.id_to_token[token] + " "
-
-        result.append(string)
-    return result
 
 
 def main(parser):
@@ -60,12 +38,12 @@ def main(parser):
         )
     print(options.input_size.height)
 
-    transformed = transforms.Compose(
-        [
-            transforms.Resize((options.input_size.height, options.input_size.width)),
-            transforms.ToTensor(),
-        ]
-    )
+    transformed = A.Compose([
+        # A.Resize(options.input_size.height, options.input_size.width),
+        A.Resize(128, 128),
+        # A.Normalize(mean=(0.6156), std=(0.1669)),
+        ToTensor()
+    ])
 
     dummy_gt = "\sin " * parser.max_sequence  # set maximum inference sequence
 
@@ -123,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint",
         dest="checkpoint",
-        default="./log/satrn/checkpoints/0048.pth",
+        default="./log/custom_satrn/checkpoints/0070.pth",
         type=str,
         help="Path of checkpoint file",
     )
