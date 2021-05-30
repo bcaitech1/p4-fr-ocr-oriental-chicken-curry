@@ -220,7 +220,6 @@ class GSRM(nn.Module):
         self.argmax_embed = nn.Embedding(n_class, n_dim)
 
         self.transformer_units = Transforme_Encoder(n_layers=n_layers, n_position=n_position)      # for global context information
-        # self.transformer_units = Torch_transformer_encoder(n_layers=n_layers, n_position=n_position)
 
     def forward(self, e_out):    
         e_argmax = e_out.argmax(dim=-1)     # b, 25
@@ -239,8 +238,7 @@ class SRN_Decoder(nn.Module):
         
         self.pvam = PVAM(N_max_character=N_max_character, n_position=n_position)
         self.w_e = nn.Linear(n_dim, n_class)    # output layer
-
-        # self.GSRM = GSRM(n_class=n_class, PAD=n_class-1, n_dim=n_dim, n_position=N_max_character, n_layers=GSRM_layer)
+        
         self.GSRM = GSRM(n_class=n_class, PAD= pad_id, n_dim=n_dim, n_position=N_max_character, n_layers=GSRM_layer)
         self.w_s = nn.Linear(n_dim, n_class)    # output layer
 
@@ -250,7 +248,7 @@ class SRN_Decoder(nn.Module):
         '''cnn_feature: b,256,512 | the output from cnn'''
 
         g_output = self.pvam(cnn_feature)   # b,25,512
-        e_out = self.w_e(g_output)     # b,25,37 ----> cross entropy loss  |  第一个输出
+        e_out = self.w_e(g_output)     # b,25,37
 
         s = self.GSRM(e_out)[0]      # b,25,512
         s_out = self.w_s(s)       # b,25,37f
