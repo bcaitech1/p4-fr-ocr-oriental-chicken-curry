@@ -136,6 +136,11 @@ venv.bak/
 pythonenv*
 log/
 wandb/
+download.sh
+submission.txt 
+tt.ipynb 
+submit/
+checkpoint.py 
 # Spyder project settings
 .spyderproject
 .spyproject
