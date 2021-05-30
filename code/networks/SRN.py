@@ -271,14 +271,14 @@ class SRN(nn.Module):
         self.encoder = ResNet_FeatureExtractor(FLAGS.data.rgb)
         
         # sequence modeling
-        self.seq = Transforme_Encoder(n_layers=2, n_position=231) # output의 w * h
+        self.seq = Transforme_Encoder(n_layers=2, n_position=FLAGS.SRN.n_position) # output의 w * h
         
         # predict
         self.decoder = SRN_Decoder(
             n_dim = FLAGS.SRN.n_dim,
             n_class = FLAGS.SRN.n_class,
             N_max_character = FLAGS.SRN.n_max_character, # max token len
-            n_position = FLAGS.SRN.n_position, # output의 w*h
+            n_position = n_position=FLAGS.SRN.n_position, # output의 w*h
             pad_id=train_dataset.token_to_id[PAD]
         )
         

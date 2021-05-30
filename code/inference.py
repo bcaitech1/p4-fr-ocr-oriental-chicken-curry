@@ -60,12 +60,8 @@ def main(parser):
         )
     print(options.input_size.height)
 
-    transformed = transforms.Compose(
-        [
-            transforms.Resize((options.input_size.height, options.input_size.width)),
-            transforms.ToTensor(),
-        ]
-    )
+    # Augmentation
+    _, _, test_transformed = get_transforms(options.augmentation, options.input_size.height,options.input_size.width)
 
     dummy_gt = "\sin " * parser.max_sequence  # set maximum inference sequence
 
@@ -75,7 +71,7 @@ def main(parser):
         data = list(reader)
     test_data = [[os.path.join(root, x[0]), x[0], dummy_gt] for x in data]
     test_dataset = LoadEvalDataset(
-        test_data, checkpoint["token_to_id"], checkpoint["id_to_token"], crop=False, transform=transformed,
+        test_data, checkpoint["token_to_id"], checkpoint["id_to_token"], crop=False, transform=test_transformed,
         rgb=options.data.rgb
     )
     test_data_loader = DataLoader(

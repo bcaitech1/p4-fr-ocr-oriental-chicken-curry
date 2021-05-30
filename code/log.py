@@ -107,22 +107,6 @@ def get_dataset(options):
     
     train_transformed, valid_transformed, test_transformed = get_transforms(options.augmentation, options.input_size.height,options.input_size.width)
 
-    # train_transformed = transforms.Compose(
-    #     [
-    #         # Resize so all images have the same size
-    #         transforms.Resize((options.input_size.height, options.input_size.width)),
-    #         transforms.ToTensor(),
-    #     ]
-    # )
-
-    # valid_transformed = transforms.Compose(
-    #     [
-    #         # Resize so all images have the same size
-    #         transforms.Resize((options.input_size.height, options.input_size.width)),
-    #         transforms.ToTensor(),
-    #     ]
-    # )
-
     train_data_loader, validation_data_loader, train_dataset, valid_dataset = dataset_loader(options, train_transformed, valid_transformed)
 
     logger.info("--------------------------------------------------")

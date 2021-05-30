@@ -237,14 +237,6 @@ def main(config_file):
     checkpoint_model_log(model_checkpoint,checkpoint)
 
     # Get data
-    # transformed = transforms.Compose(
-    #     [
-    #         # Resize so all images have the same size
-    #         transforms.Resize((options.input_size.height, options.input_size.width)),
-    #         transforms.ToTensor(),
-    #     ]
-    # )
-    
     # 데이터셋을 받아옴
     train_data_loader, validation_data_loader, train_dataset, valid_dataset, _ = get_dataset(options)
 
@@ -474,7 +466,7 @@ def main(config_file):
                     "val/sentence_accuracy":validation_epoch_sentence_accuracy,
                     "val/wer":validation_epoch_wer,
                     "val/score" : (validation_epoch_sentence_accuracy * 0.9) + (0.1 * (1 - validation_epoch_wer)),
-                    "train/teacher_forcing" : options.teacher_forcing_ratio[epoch // options.ratio_cycle]
+                    # "train/teacher_forcing" : options.teacher_forcing_ratio[epoch // options.ratio_cycle]
                 }
             )
 

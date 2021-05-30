@@ -1,7 +1,7 @@
 network: "SRN"
 input_size:
   height: 128
-  width: 128
+  width: 256
 SATRN:
   encoder:
     hidden_dim: 300
@@ -27,7 +27,7 @@ SRN:
   n_dim: 512
   n_class: 245
   n_max_character: 200
-  n_position: 231
+  n_position: 455 # h, w에 따라서 조정(128,128 -> 7*33(231)/ 128, 512 -> 7*129(903)/ 128, 256 -> 7*65(455))
 
 checkpoint: ""
 prefix: "./log/srn"
@@ -36,7 +36,7 @@ data:
   train:
     - "/opt/ml/input/data/train_dataset/gt.txt"
   test:
-    - ""
+    - "/opt/ml/input/data/eval_dataset/input.txt"
   token_paths:
     - "/opt/ml/input/data/train_dataset/tokens.txt"  # 241 tokens
   dataset_proportions:  # proportion of data to take from train (not test)
