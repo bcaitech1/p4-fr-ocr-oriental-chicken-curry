@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 
 
+## ResNet-Aster
 def conv3x3(in_planes, out_planes, stride=1):
   """3x3 convolution with padding"""
   return nn.Conv2d(in_planes, out_planes, kernel_size=3, stride=stride,
@@ -106,7 +107,7 @@ class ResNet_ASTER(nn.Module):
     return nn.Sequential(*layers)
 
   def forward(self, x):
-
+    # x = x.unsqueeze(1)  # for albumentations ToTensor       
     x0 = self.layer0(x)
     x1 = self.layer1(x0)
     x2 = self.layer2(x1)
@@ -126,6 +127,7 @@ class ResNet_ASTER(nn.Module):
 
 
 
+# DenseNet
 class BottleneckBlock(nn.Module):
     """
     Dense Bottleneck Block
@@ -266,8 +268,9 @@ class DeepCNN300(nn.Module):
             num_features, num_features // 2, kernel_size=1, stride=1, bias=False  # 128
         )
 
-    def forward(self, input):
-        out = self.conv0(input)  # (H, V, )
+    def forward(self, x):
+        # x = x.unsqueeze(1)  # for albumentations ToTensor        
+        out = self.conv0(x)  # (H, V, )
         out = self.relu(self.norm0(out))
         out = self.max_pool(out)
         out = self.block1(out)
@@ -276,3 +279,88 @@ class DeepCNN300(nn.Module):
         out_before_trans2 = self.trans2_relu(self.trans2_norm(out))
         out_A = self.trans2_conv(out_before_trans2)
         return out_A  # 128 x (16x16)
+
+
+## Coordinates Convolution layer
+class AddCoordinates(nn.Module):
+    def __init__(self, with_r=False):
+        super().__init__()
+        self.with_r = with_r
+
+    def forward(self, input_tensor):
+        batch_size, _, y_dim, x_dim = input_tensor.size()
+
+        xx_ones = torch.ones([1, 1, 1, x_dim], dtype=torch.int32)
+        yy_ones = torch.ones([1, 1, 1, y_dim], dtype=torch.int32)
+
+        xx_range = torch.arange(y_dim, dtype=torch.int32)
+        yy_range = torch.arange(x_dim, dtype=torch.int32)
+        xx_range = xx_range[None, None, :, None]
+        yy_range = yy_range[None, None, :, None]
+
+        xx_channel = torch.matmul(xx_range, xx_ones)
+        yy_channel = torch.matmul(yy_range, yy_ones)
+
+        # transpose y
+        yy_channel = yy_channel.permute(0, 1, 3, 2)
+
+        xx_channel = xx_channel.float() / (y_dim - 1)
+        yy_channel = yy_channel.float() / (x_dim - 1)
+
+        xx_channel = xx_channel * 2 - 1
+        yy_channel = yy_channel * 2 - 1
+
+        xx_channel = xx_channel.repeat(batch_size, 1, 1, 1)
+        yy_channel = yy_channel.repeat(batch_size, 1, 1, 1)
+
+        if torch.cuda.is_available:
+            input_tensor = input_tensor.cuda()
+            xx_channel = xx_channel.cuda()
+            yy_channel = yy_channel.cuda()
+        ret = torch.cat([input_tensor, xx_channel, yy_channel], dim=1)
+
+        if self.with_r:
+            rr = torch.sqrt(torch.pow(xx_channel - 0.5, 2) + torch.pow(yy_channel - 0.5, 2))
+            ret = torch.cat([ret, rr], dim=1)
+
+        return ret
+
+
+class CoordConvNet(nn.Module):
+    def __init__(self, in_channels=1, out_channels=32, kernel_size=1,
+                 stride=1, padding=0, with_r=False):
+        super(CoordConvNet, self).__init__()
+
+        in_channels += 2
+        if with_r:
+            in_channels += 1
+
+        self.coord_adder = AddCoordinates(with_r=with_r)
+        self.conv_layer = nn.Conv2d(in_channels, out_channels,
+                                    kernel_size, stride=stride,
+                                    padding=padding)
+
+    def forward(self, x):
+        x = self.coord_adder(x)
+        x = self.conv_layer(x)
+
+        return x
+
+
+# timm model
+import timm
+
+class TimmModel(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.coordconv = CoordConvNet()
+        self.net = timm.create_model('resnext50_32x4d', in_chans=32, features_only=True, pretrained=True)
+        del self.net['layer4']
+        del self.net['layer3']
+
+    def forward(self, x):
+        x = self.coordconv(x)
+        x = self.net(x)
+        
+        return x[-1] # b x 512 x 16 x 64
+        # return x

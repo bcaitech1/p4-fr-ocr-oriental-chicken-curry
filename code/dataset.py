@@ -58,7 +58,7 @@ def split_gt(groundtruth, proportion=1.0, test_percent=None):
         # print(len(data), len(source))
     
     if test_percent:
-        X_train, y_train = train_test_split(data, test_size=test_percent, stratify=source, random_state=777)
+        X_train, y_train = train_test_split(data, test_size=test_percent, stratify=source, random_state=1050)
         # test_len = round(len(data) * test_percent)
         # print(len(X_train), type(X_train), len(data[test_len:]), type(data[test_len:]))
         # return data[test_len:], data[:test_len]
@@ -231,7 +231,9 @@ class LoadEvalDataset(Dataset):
             image = image.crop(bounding_box)
 
         if self.transform:
-            image = self.transform(image)
+            image_np = np.array(image)
+            image = self.transform(image=image_np)['image']
+            # image = self.transform(image)
 
         return {"path": item["path"], "file_path":item["file_path"], "truth": item["truth"], "image": image}
 

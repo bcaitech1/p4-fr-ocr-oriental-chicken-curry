@@ -1,18 +1,21 @@
 import os
+import yaml
+import time
 import wandb
+import shutil
+import random
 import argparse
 import multiprocessing
 import numpy as np
-import random
-import time
-import shutil
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
-import albumentations as A
-from albumentations.pytorch.transforms import ToTensor
 from torchvision import transforms
-import yaml
+
+import albumentations as A
+from albumentations.pytorch.transforms import ToTensorV2
+
 from tqdm import tqdm
 from checkpoint import (
     default_checkpoint,
@@ -21,27 +24,60 @@ from checkpoint import (
 )
 from psutil import virtual_memory
 
+
 from flags import Flags
+from tia import Opening, Closing, TIADistortion, TIAStretch, TIAPerspective
 from utils import get_network, get_optimizer, seed_everything, YamlConfigManager
 from dataset import dataset_loader, START, PAD, load_vocab
 from scheduler import CircularLRBeta, CosineAnnealingWarmupRestarts
 
 from metrics import word_error_rate, sentence_acc
 
-def id_to_string(tokens, data_loader,do_eval=0):
+
+def id_to_string(tokens, data_loader, do_eval=0):
     result = []
     if do_eval:
+        eos_id = data_loader.dataset.token_to_id["<EOS>"]
         special_ids = [data_loader.dataset.token_to_id["<PAD>"], data_loader.dataset.token_to_id["<SOS>"],
                        data_loader.dataset.token_to_id["<EOS>"]]
 
     for example in tokens:
         string = ""
+        cou = 0 # 추가
+        st = 0 # 추가
+        ### bracket post processing
         if do_eval:
             for token in example:
                 token = token.item()
+                # { } 개수 맞추기
+                # ------ 추가 -------
+                if token == 224:
+                    cou += 1 
+                    st += 1 
+                elif token == 213:
+                    cou -= 1
+                elif st > 0:
+                    for i in range(st):
+                        string += "{" + " "
+
+                    st = 0
+
+                if cou == -1:
+                    cou = 0
+                    continue
+
+                if token == 213 and st > 0:
+                    st -= 1
+                    continue
+                # ------ 추가 -------
                 if token not in special_ids:
-                    if token != -1:
+                    if token != -1 and token != 224:
                         string += data_loader.dataset.id_to_token[token] + " "
+                elif token == eos_id:
+                    break
+                # if token not in special_ids:
+                #     if token != -1:
+                #         string += data_loader.dataset.id_to_token[token] + " "
         else:
             for token in example:
                 token = token.item()
@@ -56,7 +92,7 @@ def run_epoch(
     model,
     epoch_text,
     criterion,
-    aux_criterion,
+    # aux_criterion,
     optimizer,
     lr_scheduler,
     teacher_forcing_ratio,
@@ -89,7 +125,7 @@ def run_epoch(
         for d in data_loader:
             image = d["image"].float().to(device)
             # print(image.shape, type(image))
-            aux_label = d["source"].float().to(device)
+            # aux_label = d["source"].float().to(device)
             # print(aux_label.shape, type(aux_label))
 
             # The last batch may not be a full batch
@@ -99,16 +135,18 @@ def run_epoch(
             # Replace -1 with the PAD token
             expected[expected == -1] = data_loader.dataset.token_to_id[PAD]
 
-            output, aux_output = model(image, expected, train, teacher_forcing_ratio)
+            # output, aux_output = model(image, expected, train, teacher_forcing_ratio)
+            output = model(image, expected, train, teacher_forcing_ratio)
             
             decoded_values = output.transpose(1, 2)
             _, sequence = torch.topk(decoded_values, 1, dim=1)
             sequence = sequence.squeeze(1)
             
-            if train:
-                loss = criterion(decoded_values, expected[:, 1:]) + (aux_criterion(aux_output, aux_label) * 0.4)
-            else:
-                loss = criterion(decoded_values, expected[:, 1:])
+            # if train:
+            #     loss = criterion(decoded_values, expected[:, 1:]) + (aux_criterion(aux_output, aux_label) * 0.4)
+            # else:
+            #     loss = criterion(decoded_values, expected[:, 1:])
+            loss = criterion(decoded_values, expected[:, 1:])
 
             if train:
                 optim_params = [
@@ -135,11 +173,11 @@ def run_epoch(
             losses.append(loss.item())
             
             expected[expected == data_loader.dataset.token_to_id[PAD]] = -1
-            expected_str = id_to_string(expected, data_loader,do_eval=1)
-            sequence_str = id_to_string(sequence, data_loader,do_eval=1)
+            expected_str = id_to_string(expected, data_loader, do_eval=1)
+            sequence_str = id_to_string(sequence, data_loader, do_eval=1)
             wer += word_error_rate(sequence_str,expected_str)
             num_wer += 1
-            sent_acc += sentence_acc(sequence_str,expected_str)
+            sent_acc += sentence_acc(sequence_str, expected_str)
             num_sent_acc += 1
             correct_symbols += torch.sum(sequence == expected[:, 1:], dim=(0, 1)).item()
             total_symbols += torch.sum(expected[:, 1:] != -1, dim=(0, 1)).item()
@@ -232,27 +270,23 @@ def main(config_file):
 
     # Get data
     train_transform = A.Compose([
+        A.OneOf([
+            Opening(p=1),
+            Closing(p=0.25)
+        ], p=0.5),
         A.Resize(options.input_size.height, options.input_size.width),
         A.OneOf([
-            A.Rotate(),
-            A.ShiftScaleRotate(),
-            A.RandomRotate90()            
-        ]),
-        A.OneOf([
-            A.HorizontalFlip(),
-            A.VerticalFlip()
-        ]),
-        A.OneOf([
-            A.MotionBlur(),
-            A.Blur(),
-            A.GaussianBlur()
-        ]),
-        ToTensor()
+            TIAPerspective(p=1),
+            TIAStretch(p=1),
+        ], p=0.15),        
+        A.Normalize(mean=(0.6156), std=(0.1669)),
+        ToTensorV2()
     ])
     
     valid_transform = A.Compose([
         A.Resize(options.input_size.height, options.input_size.width),
-        ToTensor()
+        A.Normalize(mean=(0.6156), std=(0.1669)),
+        ToTensorV2()
     ])
 
     # transformed = transforms.Compose(
@@ -283,7 +317,7 @@ def main(config_file):
     wandb.watch(model)  # WANDB
     model.train()
     criterion = model.criterion.to(device)
-    aux_criterion = model.aux_criterion.to(device)
+    # aux_criterion = model.aux_criterion.to(device)
     enc_params_to_optimise = [
         param for param in model.encoder.parameters() if param.requires_grad
     ]
@@ -368,12 +402,7 @@ def main(config_file):
             pad=len(str(options.num_epochs)),
         )
 
-        if epoch < (options.num_epochs * 0.25):            
-            teacher_forcing_ratio = options.teacher_forcing_ratio[0]
-        elif epoch >= (options.num_epochs * 0.25) and epoch < (options.num_epochs * 0.5):
-            teacher_forcing_ratio = options.teacher_forcing_ratio[1]
-        else:
-            teacher_forcing_ratio = options.teacher_forcing_ratio[2]
+        teacher_forcing_ratio = options.teacher_forcing_ratio
 
         # Train
         train_result = run_epoch(
@@ -381,7 +410,7 @@ def main(config_file):
             model,
             epoch_text,
             criterion,
-            aux_criterion,
+            # aux_criterion,
             optimizer,
             lr_scheduler,
             teacher_forcing_ratio,
@@ -413,7 +442,7 @@ def main(config_file):
             model,
             epoch_text,
             criterion,
-            aux_criterion,
+            # aux_criterion,
             optimizer,
             lr_scheduler,
             teacher_forcing_ratio,

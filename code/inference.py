@@ -1,7 +1,10 @@
 import torch
 import os
+from math import log
+import numpy as np
+import torch.nn as nn
 import albumentations as A
-from albumentations.pytorch.transforms import ToTensor, ToTensorV2
+from albumentations.pytorch.transforms import ToTensorV2
 from train import id_to_string
 from metrics import word_error_rate, sentence_acc
 from checkpoint import load_checkpoint
@@ -14,6 +17,33 @@ from torch.utils.data import DataLoader
 import argparse
 import random
 from tqdm import tqdm
+from tia import Denosing
+
+
+def beam_search_decoder(datas, k=5):
+    """
+    beam search decoder
+    """
+    
+    res = []
+    
+    for data in datas:
+        sequences = [[list(), 1.0]]
+        score_check = []
+        for row in data:
+            all_candidates = list()
+            for i in range(len(sequences)):
+                seq, score = sequences[i]
+                for j in range(len(row)):
+                    candidate = [seq + [j], score * -log(row[j])]
+                    all_candidates.append(candidate)
+            ordered = sorted(all_candidates, key=lambda tup: tup[1])
+           
+            sequences = ordered[:k]
+             
+        res.append(sequences[0][0])
+        
+    return np.array(res)
 
 
 def main(parser):
@@ -24,6 +54,7 @@ def main(parser):
     random.seed(options.seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+    softmax = nn.Softmax(dim=1)
 
     hardware = "cuda" if is_cuda else "cpu"
     device = torch.device(hardware)
@@ -39,10 +70,10 @@ def main(parser):
     print(options.input_size.height)
 
     transformed = A.Compose([
-        # A.Resize(options.input_size.height, options.input_size.width),
-        A.Resize(128, 128),
-        # A.Normalize(mean=(0.6156), std=(0.1669)),
-        ToTensor()
+        A.Resize(options.input_size.height, options.input_size.width),
+        # Denosing(p=1),
+        A.Normalize(mean=(0.6156), std=(0.1669)),
+        ToTensorV2()
     ])
 
     dummy_gt = "\sin " * parser.max_sequence  # set maximum inference sequence
@@ -82,10 +113,18 @@ def main(parser):
         input = d["image"].to(device)
         expected = d["truth"]["encoded"].to(device)
 
-        output = model(input, expected, False, 0.0)
+        output = model(input, expected, False, 0.0)        
+        
+        # Original
         decoded_values = output.transpose(1, 2)
         _, sequence = torch.topk(decoded_values, 1, dim=1)
         sequence = sequence.squeeze(1)
+        
+        # # Beam Search
+        # output = softmax(output)
+        # beam_result = beam_search_decoder(output.detach().cpu().numpy(), k=5)
+        # sequence = torch.from_numpy(beam_result).to(device)
+
         sequence_str = id_to_string(sequence, test_data_loader, do_eval=1)
         for path, predicted in zip(d["file_path"], sequence_str):
             results.append((path, predicted))
@@ -101,7 +140,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint",
         dest="checkpoint",
-        default="./log/custom_satrn/checkpoints/0070.pth",
+        default="./log/timm_satrn/checkpoints/0070.pth",
         type=str,
         help="Path of checkpoint file",
     )
@@ -115,7 +154,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--batch_size",
         dest="batch_size",
-        default=8,
+        default=2,
         type=int,
         help="batch size when doing inference",
     )

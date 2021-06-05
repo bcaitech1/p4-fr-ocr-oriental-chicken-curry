@@ -6,7 +6,7 @@ import math
 import random
 
 from dataset import START, PAD
-from networks.backbone import ResNet_ASTER, DeepCNN300
+from networks.backbone import ResNet_ASTER, DeepCNN300, TimmModel
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -189,7 +189,8 @@ class TransformerEncoderFor2DFeatures(nn.Module):
         checkpoint=None,
     ):
         super(TransformerEncoderFor2DFeatures, self).__init__()
-        self.shallow_cnn = ResNet_ASTER(out_channel=300)
+        # self.shallow_cnn = ResNet_ASTER(out_channel=300)
+        self.shallow_cnn = TimmModel()
         # self.shallow_cnn = DeepCNN300(
         #     input_size,
         #     num_in_features=48,
@@ -208,7 +209,8 @@ class TransformerEncoderFor2DFeatures(nn.Module):
 
     def forward(self, input):
 
-        out, aux_out = self.shallow_cnn(input)  # [b, c, h, w]
+        # out, aux_out = self.shallow_cnn(input)  # [b, c, h, w]
+        out= self.shallow_cnn(input)  # [b, c, h, w]
         out = self.positional_encoding(out)  # [b, c, h, w]
 
         # flatten
@@ -217,7 +219,7 @@ class TransformerEncoderFor2DFeatures(nn.Module):
 
         for layer in self.attention_layers:
             out = layer(out)
-        return out, aux_out
+        return out #, aux_out
 
 
 class TransformerDecoderLayer(nn.Module):
@@ -424,18 +426,19 @@ class SATRN(nn.Module):
         )
 
         self.criterion = (
-            nn.CrossEntropyLoss()
+            nn.CrossEntropyLoss(ignore_index=train_dataset.token_to_id[PAD])
         )  # without ignore_index=train_dataset.token_to_id[PAD]
 
-        self.aux_criterion = (
-            nn.BCELoss()
-        )
+        # self.aux_criterion = (
+        #     nn.BCELoss()
+        # )
 
         if checkpoint:
             self.load_state_dict(checkpoint)
 
     def forward(self, input, expected, is_train, teacher_forcing_ratio):
-        enc_result, aux_result = self.encoder(input)
+        # enc_result, aux_result = self.encoder(input)
+        enc_result = self.encoder(input)
         dec_result = self.decoder(
             enc_result,
             expected[:, :-1],
@@ -443,4 +446,4 @@ class SATRN(nn.Module):
             expected.size(1),
             teacher_forcing_ratio,
         )
-        return dec_result, aux_result
+        return dec_result #, aux_result
