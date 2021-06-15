@@ -25,7 +25,15 @@ from metrics import word_error_rate, sentence_acc
 
 
 def encode_truth(truth, token_to_id):
+    """ ground truth의 latex문구를 파싱하여 id로 변환
 
+    Args:
+        truth(str) : gt latex
+        token_to_id(dict) : token의 아이디 정보가 담겨있는 딕셔너리
+
+    Returns:
+        list : 토큰들의 아이디 정보
+    """
     truth_tokens = truth.split()
     for token in truth_tokens:
         if token not in token_to_id:
@@ -53,6 +61,7 @@ def collate_eval_batch(data):
         "height": [d["height"] for d in data],
         "width": [d["width"] for d in data]
     }
+
 
 class LoadEvalDataset(Dataset):
     """Load Dataset"""
@@ -161,12 +170,12 @@ def main(parser):
     ])
 
     dummy_gt = "\sin " * parser.max_sequence  # set maximum inference sequence
-
-    root = os.path.join(os.path.dirname(parser.file_path), "images")
+    # root = os.path.join(os.path.dirname(parser.file_path), "images")
     with open(parser.file_path, "r") as fd:
         reader = csv.reader(fd, delimiter="\t")
         data = list(reader)
-    test_data = [[os.path.join(root, x[0]), x[0], dummy_gt] for x in data]
+    # test_data = [[os.path.join(root, x[0]), x[0], dummy_gt] for x in data]
+    test_data = [[x[0], x[0].split('/')[-1], dummy_gt] for x in data]
     test_dataset = LoadEvalDataset(
         test_data, checkpoint["token_to_id"], checkpoint["id_to_token"], crop=False, transform=transformed,
         rgb=options.data.rgb
@@ -194,12 +203,12 @@ def main(parser):
     model.eval()
     results = []
     for d in tqdm(test_data_loader):
-        input = d["image"].to(device)
+        images = d["image"].float().to(device)
         expected = d["truth"]["encoded"].to(device)
         width = d["width"][0]
         height = d["height"][0]
 
-        output = model(input, expected, False, 0.0)
+        output = model(images, expected, False, 0.0)
         
         # Original
         decoded_values = output.transpose(1, 2)
@@ -242,14 +251,14 @@ if __name__ == "__main__":
     parser.add_argument(
         "--checkpoint",
         dest="checkpoint",
-        default="./log/timm_satrn/checkpoints/0006.pth",
+        default="./log/timm_satrn/checkpoints/0001.pth",
         type=str,
         help="Path of checkpoint file",
     )
     parser.add_argument(
         "--max_sequence",
         dest="max_sequence",
-        default=230,
+        default=150,
         type=int,
         help="maximun sequence when doing inference",
     )
@@ -262,7 +271,7 @@ if __name__ == "__main__":
     )
 
     eval_dir = os.environ.get('SM_CHANNEL_EVAL', '/opt/ml/input/data/')
-    file_path = os.path.join(eval_dir, 'eval_dataset/input.txt')
+    file_path = os.path.join(eval_dir, 'eval_dataset/val_input.txt')
     parser.add_argument(
         "--file_path",
         dest="file_path",

@@ -2,9 +2,9 @@ import timm
 import torch
 from prettyprinter import pprint
 
-# pprint(timm.list_models(pretrained=True))
+pprint(timm.list_models(pretrained=True))
 # resnext50d_32x4d
-m = timm.create_model('dm_nfnet_f1', features_only=True, in_chans=1, pretrained=True)
+m = timm.create_model('swsl_resnext101_32x16d', features_only=True, in_chans=1, pretrained=True)
 print(f'Feature channels: {m.feature_info.channels()}')
 # del m['final_conv']
 # del m['stages_2']

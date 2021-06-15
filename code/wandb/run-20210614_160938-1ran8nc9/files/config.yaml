@@ -1,0 +1,76 @@
+wandb_version: 1
+
+_wandb:
+  desc: null
+  value:
+    cli_version: 0.10.30
+    framework: torch
+    is_jupyter_run: false
+    is_kaggle_kernel: false
+    python_version: 3.7.7
+    t:
+      1:
+      - 1
+      - 5
+      2:
+      - 1
+      - 5
+      3:
+      - 1
+      4: 3.7.7
+      5: 0.10.30
+      8:
+      - 5
+config_file_path:
+  desc: null
+  value: ./configs/SATRN.yaml
+values:
+  desc: null
+  value:
+    SATRN:
+      decoder:
+        filter_dim: 512
+        head_num: 8
+        hidden_dim: 128
+        layer_num: 3
+        src_dim: 512
+      encoder:
+        filter_dim: 768
+        head_num: 8
+        hidden_dim: 512
+        layer_num: 6
+    batch_size: 16
+    checkpoint: ''
+    data:
+      crop: true
+      dataset_proportions:
+      - 1.0
+      random_split: true
+      rgb: 1
+      test:
+      - /opt/ml/input/data/eval_dataset/input.txt
+      test_proportions: 0.2
+      token_paths:
+      - /opt/ml/input/data/train_dataset/tokens.txt
+      train:
+      - /opt/ml/input/data/train_dataset/gt.txt
+    dropout_rate: 0.1
+    input_size:
+      height: 128
+      width: 448
+    max_grad_norm: 2.0
+    network: SATRN
+    num_epochs: 70
+    num_workers: 8
+    optimizer:
+      cycle: 2
+      gamma: 0.3
+      max_lr: 2.5e-05
+      min_lr: 2.5e-06
+      optimizer: MADGRAD
+      scheduler: cosine
+      weight_decay: 1e-4
+    prefix: ./log/timm_satrn
+    print_epochs: 1
+    seed: 1050
+    teacher_forcing_ratio: 0.7

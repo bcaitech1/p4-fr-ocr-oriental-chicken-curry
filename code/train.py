@@ -26,7 +26,7 @@ from psutil import virtual_memory
 
 
 from flags import Flags
-from tia import Opening, Closing, TIADistortion, TIAStretch, TIAPerspective
+from tia import Opening, Closing, TIADistortion, TIAStretch, TIAPerspective, Denoising
 from utils import get_network, get_optimizer, seed_everything, YamlConfigManager
 from dataset import dataset_loader, START, PAD, load_vocab
 from scheduler import CircularLRBeta, CosineAnnealingWarmupRestarts
@@ -43,35 +43,36 @@ def id_to_string(tokens, data_loader, do_eval=0):
 
     for example in tokens:
         string = ""
-        cou = 0 # 추가
-        st = 0 # 추가
+        # cou = 0 # 추가
+        # st = 0 # 추가
         ### bracket post processing
         if do_eval:
             for token in example:
                 token = token.item()
-                # { } 개수 맞추기
-                # ------ 추가 -------
-                if token == 224:
-                    cou += 1 
-                    st += 1 
-                elif token == 213:
-                    cou -= 1
-                elif st > 0:
-                    for i in range(st):
-                        string += "{" + " "
+                # # { } 개수 맞추기
+                # # ------ 추가 -------
+                # if token == 224:
+                #     cou += 1 
+                #     st += 1 
+                # elif token == 213:
+                #     cou -= 1
+                # elif st > 0:
+                #     for i in range(st):
+                #         string += "{" + " "
 
-                    st = 0
+                #     st = 0
 
-                if cou == -1:
-                    cou = 0
-                    continue
+                # if cou == -1:
+                #     cou = 0
+                #     continue
 
-                if token == 213 and st > 0:
-                    st -= 1
-                    continue
-                # ------ 추가 -------
+                # if token == 213 and st > 0:
+                #     st -= 1
+                #     continue
+                # # ------ 추가 -------
                 if token not in special_ids:
-                    if token != -1 and token != 224:
+                    # if token != -1 and token != 224:
+                    if token != -1:
                         string += data_loader.dataset.id_to_token[token] + " "
                 elif token == eos_id:
                     break
@@ -269,12 +270,13 @@ def main(config_file):
         )
 
     # Get data
-    train_transform = A.Compose([
+    train_transform = A.Compose([        
         A.OneOf([
             Opening(p=1),
             Closing(p=0.25)
         ], p=0.5),
         A.Resize(options.input_size.height, options.input_size.width),
+        Denoising(p=1),
         A.OneOf([
             TIAPerspective(p=1),
             TIAStretch(p=1),
@@ -285,6 +287,7 @@ def main(config_file):
     
     valid_transform = A.Compose([
         A.Resize(options.input_size.height, options.input_size.width),
+        Denoising(p=1),
         A.Normalize(mean=(0.6156), std=(0.1669)),
         ToTensorV2()
     ])
@@ -314,6 +317,7 @@ def main(config_file):
         device,
         train_dataset,
     )
+    model.load_state_dict(torch.load('./log/timm_satrn/checkpoints/0002.pth')['model'])
     wandb.watch(model)  # WANDB
     model.train()
     criterion = model.criterion.to(device)

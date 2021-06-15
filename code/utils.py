@@ -7,6 +7,7 @@ import numpy as np
 
 from adamp import AdamP
 from madgrad import MADGRAD
+from torch.optim.adamw import AdamW
 from easydict import EasyDict
 
 from networks.Attention import Attention
@@ -52,6 +53,8 @@ def get_optimizer(optimizer, params, lr, weight_decay=None):
         optimizer = AdamP(params, lr=lr, weight_decay=weight_decay)
     elif optimizer == "MADGRAD":
         optimizer = MADGRAD(params, lr=lr, weight_decay=0.0)
+    elif optimizer == "AdamW":
+        optimizer = AdamW(params, lr=lr, weight_decay=weight_decay)
     else:
         raise NotImplementedError
     return optimizer

@@ -1,3 +1,4 @@
+import cv2
 import csv
 import os
 import random
@@ -58,7 +59,7 @@ def split_gt(groundtruth, proportion=1.0, test_percent=None):
         # print(len(data), len(source))
     
     if test_percent:
-        X_train, y_train = train_test_split(data, test_size=test_percent, stratify=source, random_state=1050)
+        X_train, y_train = train_test_split(data, test_size=test_percent, stratify=source, random_state=7777)
         # test_len = round(len(data) * test_percent)
         # print(len(X_train), type(X_train), len(data[test_len:]), type(data[test_len:]))
         # return data[test_len:], data[:test_len]
@@ -163,6 +164,9 @@ class LoadDataset(Dataset):
 
         if self.transform:
             image_np = np.array(image)
+            # h, w = image_np.shape
+            # if h * 0.3 > w:
+            #     image_np = cv2.rotate(image_np, cv2.ROTATE_90_COUNTERCLOCKWISE)
             image = self.transform(image=image_np)['image']
             # image = self.transform(image)
 
@@ -232,7 +236,10 @@ class LoadEvalDataset(Dataset):
 
         if self.transform:
             image_np = np.array(image)
-            image = self.transform(image=image_np)['image']
+            h, w = image_np.shape
+            # if h * 0.3 > w:
+            #     image_np = cv2.rotate(image_np, cv2.ROTATE_90_COUNTERCLOCKWISE)
+            # image = self.transform(image=image_np)['image']
             # image = self.transform(image)
 
         return {"path": item["path"], "file_path":item["file_path"], "truth": item["truth"], "image": image}

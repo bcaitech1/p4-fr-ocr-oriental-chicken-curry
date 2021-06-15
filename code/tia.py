@@ -267,7 +267,6 @@ def closing(img):
 
 
 def opening(img):
-    k = get_random_kernel
     img = cv2.erode(img, get_random_kernel(), iterations=1)
     img = cv2.dilate(img, get_random_kernel(), iterations=1)
     return img
@@ -315,9 +314,9 @@ class TIAPerspective(ImageOnlyTransform):
     def apply(self, img, **params):
         return tia_perspective(img)
 
-class Denosing(ImageOnlyTransform):
+class Denoising(ImageOnlyTransform):
     def __init__(self, always_apply=False, p=0.5):
         super().__init__(always_apply=always_apply, p=p)
     
     def apply(self, img, **params):
-        return cv2.fastNlMeansDenoising(img, h=10)
+        return cv2.fastNlMeansDenoising(img, h=5)
