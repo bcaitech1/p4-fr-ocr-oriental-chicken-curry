@@ -28,8 +28,12 @@
 
 <br></br>
 ##  대회 개요 <a name = 'Overview'></a>
+<img src='https://www.googleapis.com/download/storage/v1/b/kaggle-user-content/o/inbox%2F5602706%2F67bf0c680286baf2c979c8207a991bb2%2FScreen%20Shot%202020-08-19%20at%201.02.50%20PM.png?generation=1597868629120369&alt=media' width=800 height=300/>
+
+<br></br>
 수식 이미지를 latex 포멧의 text로 변환하는 문제입니다. 수식 인식의 경우는, 기존의 광학 문자 인식과는 달리 multi line recogintion을 필요로 합니다.<br><br>
 기존 single line recognition 기반의 OCR이 아닌 multi line recognition을 이용하는 기존 OCR과는 차별화되는 Task입니다.
+
 
 
 - 평가방법 
@@ -38,24 +42,32 @@
 
 <br></br>
 ## 📝 문제 정의 및 해결 방법 <a name = 'Solution'></a>
-- 해당 대회에 대한 문제 정의, 해결 방법, 웹 서빙 등의 내용을 정리한 링크는 아래에서 자세하게 확인 해 보실 수 있습니다.<br>
-[Notion](https://www.notion.so/OCR-07-d55776948a91481e9e5589a4956d163c)
 
+- 해당 대회에 대한 문제 정의, 해결 방법, 웹 서빙 등의 내용은 [여기](https://www.notion.so/OCR-07-d55776948a91481e9e5589a4956d163c)서 자세하게 확인 해 보실 수 있습니다.<br>
+
+-  협업 관련  내용은  [여기](https://www.notion.so/4ff1baeb5d2e44f88a1e1c8dff158db5?v=ce487a62011b4171b4e54c6b591b2029)서 확인 할 수 있습니다
 <br></br>
 ## 💻 CODE 설명<a name = 'Code'></a>
 - 자세한 CODE 설명은 개인 폴더 내 README.md를 통해 확인하실 수 있습니다. 
-
 ~~~
 ├── README.md
-├── configs
+├── configs           # yaml -> 파라미터 수정 
 ├── data
 ├── data_tools
 ├── inference&practice
-├── inference.py
+├── inference.py      # 모델 추론
 ├── log.py
-├── networks
-├── requirements.txt
-├── train.py
-├── unit_test.py
-└── utils
+├── networks          # SATRN , SRN 등 OCR 모델
+├── requirements.txt  
+├── train.py          # 학습 코드
+├── unit_test.py      # test 코드
+└── utils             # 그 외 유틸 코드
 ~~~
+
+- Train & Test code
+```
+python train.py
+
+python inference.py
+```
+
