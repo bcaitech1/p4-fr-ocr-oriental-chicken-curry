@@ -48,7 +48,6 @@
 -  협업 관련  내용은  [여기](https://www.notion.so/4ff1baeb5d2e44f88a1e1c8dff158db5?v=ce487a62011b4171b4e54c6b591b2029)서 확인 할 수 있습니다
 <br></br>
 ## 💻 CODE 설명<a name = 'Code'></a>
-- 자세한 CODE 설명은 개인 폴더 내 README.md를 통해 확인하실 수 있습니다. 
 ~~~
 ├── README.md
 ├── configs           # yaml -> 파라미터 수정 
@@ -66,8 +65,8 @@
 
 - Train & Test code
 ```
-python train.py
+python code/train.py
 
-python inference.py
+python code/inference.py
 ```
 
